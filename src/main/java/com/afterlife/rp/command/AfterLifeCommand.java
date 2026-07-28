@@ -5,6 +5,11 @@ import com.afterlife.rp.config.Messages;
 import com.afterlife.rp.database.DatabaseManager;
 import com.afterlife.rp.integration.Adapter;
 import com.afterlife.rp.integration.IntegrationManager;
+import com.afterlife.rp.module.banking.BankingItems;
+import com.afterlife.rp.module.banking.BankingService;
+import com.afterlife.rp.shared.economy.AccountService;
+import com.afterlife.rp.shared.economy.Money;
+import com.afterlife.rp.shared.economy.ReconciliationService;
 import com.afterlife.rp.shared.items.SerializedItemService;
 import com.afterlife.rp.shared.regions.Poi;
 import com.afterlife.rp.shared.regions.PoiService;
@@ -42,6 +47,9 @@ public final class AfterLifeCommand implements CommandExecutor, TabCompleter {
     private final SerializedItemService itemService;
     private final CoreConfig coreConfig;
     private final Messages messages;
+    private final ReconciliationService reconciliationService;
+    private final AccountService accountService;
+    private final BankingService bankingService;
 
     public AfterLifeCommand(
             JavaPlugin plugin,
@@ -50,7 +58,10 @@ public final class AfterLifeCommand implements CommandExecutor, TabCompleter {
             PoiService poiService,
             SerializedItemService itemService,
             CoreConfig coreConfig,
-            Messages messages) {
+            Messages messages,
+            ReconciliationService reconciliationService,
+            AccountService accountService,
+            BankingService bankingService) {
         this.plugin = plugin;
         this.databaseManager = databaseManager;
         this.integrationManager = integrationManager;
@@ -58,6 +69,9 @@ public final class AfterLifeCommand implements CommandExecutor, TabCompleter {
         this.itemService = itemService;
         this.coreConfig = coreConfig;
         this.messages = messages;
+        this.reconciliationService = reconciliationService;
+        this.accountService = accountService;
+        this.bankingService = bankingService;
     }
 
     @Override
@@ -72,6 +86,7 @@ public final class AfterLifeCommand implements CommandExecutor, TabCompleter {
             case "health" -> health(sender);
             case "setup" -> setup(sender, args);
             case "debug" -> debug(sender, args);
+            case "reconcile" -> reconcile(sender);
             default -> sendUsage(sender, label);
         }
         return true;
@@ -79,7 +94,30 @@ public final class AfterLifeCommand implements CommandExecutor, TabCompleter {
 
     private void sendUsage(CommandSender sender, String label) {
         messages.send(sender, "general.unknown-subcommand",
-                Placeholder.unparsed("usage", "/" + label + " <version|health|setup|debug>"));
+                Placeholder.unparsed("usage", "/" + label + " <version|health|setup|debug|reconcile>"));
+    }
+
+    private void reconcile(CommandSender sender) {
+        if (!sender.hasPermission(ADMIN)) {
+            messages.send(sender, "general.no-permission");
+            return;
+        }
+        if (!databaseManager.ready()) {
+            messages.send(sender, "general.db-unavailable");
+            return;
+        }
+        messages.send(sender, "reconcile.header");
+        reconciliationService.run("command").thenAccept(report -> {
+            if (report.clean()) {
+                messages.send(sender, "reconcile.ok",
+                        Placeholder.unparsed("transactions", String.valueOf(report.transactionsChecked())),
+                        Placeholder.unparsed("accounts", String.valueOf(report.accountsChecked())));
+            } else {
+                for (String defect : report.defects()) {
+                    messages.send(sender, "reconcile.defect", Placeholder.unparsed("detail", defect));
+                }
+            }
+        });
     }
 
     private void version(CommandSender sender) {
@@ -123,6 +161,10 @@ public final class AfterLifeCommand implements CommandExecutor, TabCompleter {
             messages.send(sender, "general.db-unavailable");
             return;
         }
+        if (args.length >= 2 && args[1].equalsIgnoreCase("org")) {
+            orgSetup(sender, args);
+            return;
+        }
         if (args.length < 2 || !args[1].equalsIgnoreCase("poi")) {
             messages.send(sender, "poi.usage");
             return;
@@ -135,6 +177,31 @@ public final class AfterLifeCommand implements CommandExecutor, TabCompleter {
             case "report" -> poiReport(sender);
             default -> messages.send(sender, "poi.usage");
         }
+    }
+
+    private void orgSetup(CommandSender sender, String[] args) {
+        // /afterlife setup org create <type> <name> [display name...]
+        if (args.length < 5 || !args[2].equalsIgnoreCase("create")) {
+            messages.send(sender, "org.usage");
+            return;
+        }
+        String type = args[3].toUpperCase(Locale.ROOT);
+        String name = args[4].toLowerCase(Locale.ROOT);
+        String display = args.length > 5
+                ? String.join(" ", List.of(args).subList(5, args.length))
+                : args[4];
+        java.util.UUID actor = sender instanceof Player player ? player.getUniqueId() : null;
+        accountService.createOrganization(name, type, display, actor, sender.getName())
+                .whenComplete((account, error) -> {
+                    if (error != null) {
+                        messages.send(sender, "general.internal-error");
+                        plugin.getLogger().warning("Org create failed: " + error.getMessage());
+                        return;
+                    }
+                    messages.send(sender, "org.created",
+                            Placeholder.unparsed("name", display),
+                            Placeholder.unparsed("iban", account.iban()));
+                });
     }
 
     private void poiCreate(CommandSender sender, String[] args) {
@@ -255,6 +322,27 @@ public final class AfterLifeCommand implements CommandExecutor, TabCompleter {
             messages.send(sender, "general.db-unavailable");
             return;
         }
+        if (args.length >= 3 && args[1].equalsIgnoreCase("dirtymoney") && bankingService != null) {
+            Long cents = Money.parseWholeEuros(args[2]);
+            if (cents == null) {
+                messages.send(sender, "bank.invalid-amount");
+                return;
+            }
+            bankingService.issueDirty(player.getUniqueId(), cents, player.getUniqueId())
+                    .thenAccept(notes -> databaseManager.db().onMain(() -> {
+                        if (!player.isOnline()) {
+                            return;
+                        }
+                        notes.forEach(note -> player.getInventory()
+                                .addItem(BankingItems.toStack(itemService, note)).values()
+                                .forEach(rest -> player.getWorld()
+                                        .dropItemNaturally(player.getLocation(), rest)));
+                        messages.send(player, "debug.dirty-issued",
+                                Placeholder.unparsed("amount", Money.format(cents)),
+                                Placeholder.unparsed("count", String.valueOf(notes.size())));
+                    }));
+            return;
+        }
         if (args.length < 3 || !args[1].equalsIgnoreCase("item")) {
             messages.send(sender, "debug.item-usage");
             return;
@@ -300,10 +388,10 @@ public final class AfterLifeCommand implements CommandExecutor, TabCompleter {
     public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command,
             @NotNull String alias, String @NotNull [] args) {
         if (args.length == 1) {
-            return filter(List.of("version", "health", "setup", "debug"), args[0]);
+            return filter(List.of("version", "health", "setup", "debug", "reconcile"), args[0]);
         }
         if (args.length == 2 && args[0].equalsIgnoreCase("setup")) {
-            return filter(List.of("poi"), args[1]);
+            return filter(List.of("poi", "org"), args[1]);
         }
         if (args.length == 3 && args[0].equalsIgnoreCase("setup")) {
             return filter(List.of("create", "remove", "list", "report"), args[2]);
@@ -315,7 +403,7 @@ public final class AfterLifeCommand implements CommandExecutor, TabCompleter {
             return filter(poiService.all().stream().map(Poi::name).toList(), args[3]);
         }
         if (args.length == 2 && args[0].equalsIgnoreCase("debug")) {
-            return filter(List.of("item"), args[1]);
+            return filter(List.of("item", "dirtymoney"), args[1]);
         }
         return List.of();
     }

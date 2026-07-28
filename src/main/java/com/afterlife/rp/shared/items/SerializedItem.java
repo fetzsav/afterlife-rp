@@ -2,7 +2,7 @@ package com.afterlife.rp.shared.items;
 
 import java.util.UUID;
 
-/** Database record for a serialized physical valuable. */
+/** Database record for a serialized physical valuable. Metadata is JSON or null. */
 public record SerializedItem(
         UUID serial,
         String itemType,
@@ -10,4 +10,5 @@ public record SerializedItem(
         Long denomination,
         ItemStatus status,
         UUID issuedBy,
-        long issuedAtEpochMs) {}
+        long issuedAtEpochMs,
+        String metadata) {}

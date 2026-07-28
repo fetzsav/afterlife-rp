@@ -127,7 +127,7 @@ class FoundationIT {
         databaseManager.db().inTransaction(connection -> {
             repository.insert(connection, new SerializedItem(
                     serial, "dirty_money", null, 500L, ItemStatus.ISSUED, null,
-                    System.currentTimeMillis()));
+                    System.currentTimeMillis(), null));
             return null;
         }).join();
 

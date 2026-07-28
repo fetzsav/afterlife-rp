@@ -17,6 +17,7 @@ repositories {
     maven("https://repo.papermc.io/repository/maven-public/")
     maven("https://maven.enginehub.org/repo/")
     maven("https://repo.extendedclip.com/releases/")
+    maven("https://jitpack.io")
 }
 
 // Runtime libraries are resolved by the server through plugin.yml `libraries:`;
@@ -35,6 +36,7 @@ dependencies {
     compileOnly("com.sk89q.worldedit:worldedit-bukkit:7.3.18") { isTransitive = false }
     compileOnly("com.sk89q.worldedit:worldedit-core:7.3.18") { isTransitive = false }
     compileOnly("me.clip:placeholderapi:2.12.3")
+    compileOnly("com.github.MilkBowl:VaultAPI:1.7.1") { isTransitive = false }
 
     compileOnly("com.zaxxer:HikariCP:$hikariVersion")
     compileOnly("org.flywaydb:flyway-core:$flywayVersion")

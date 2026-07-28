@@ -51,17 +51,24 @@ public final class SerializedItemService {
         UUID serial = UUID.randomUUID();
         long issuedAt = System.currentTimeMillis();
         SerializedItem record = new SerializedItem(
-                serial, itemType, owner, denomination, ItemStatus.ISSUED, issuedBy, issuedAt);
+                serial, itemType, owner, denomination, ItemStatus.ISSUED, issuedBy, issuedAt, null);
         return databaseManager.db().inTransaction(connection -> {
             repository.insert(connection, record);
             return record;
-        }).thenApply(saved -> stamp(new ItemStack(material, 1), displayName, saved));
+        }).thenApply(saved -> toItemStack(saved, material, displayName));
     }
 
-    /** Reads PDC and verifies HMAC synchronously, then checks the DB record. */
-    public CompletableFuture<ValidationResult> validate(ItemStack item, ItemStatus expectedStatus) {
+    /** PDC payload of a physically held item whose HMAC verified. */
+    public record PdcData(UUID serial, String itemType, long denomination, long issuedAt) {}
+
+    /**
+     * Reads the PDC and verifies the HMAC synchronously (safe on the main
+     * thread — no database access). Empty when the item is not one of ours or
+     * has been tampered with.
+     */
+    public java.util.Optional<PdcData> readVerified(ItemStack item) {
         if (item == null || !item.hasItemMeta()) {
-            return CompletableFuture.completedFuture(new ValidationResult(Validation.NOT_SERIALIZED, null));
+            return java.util.Optional.empty();
         }
         PersistentDataContainer pdc = item.getItemMeta().getPersistentDataContainer();
         String serialText = pdc.get(ItemKeys.SERIAL, PersistentDataType.STRING);
@@ -70,13 +77,29 @@ public final class SerializedItemService {
         Long issuedAt = pdc.get(ItemKeys.ISSUED_AT, PersistentDataType.LONG);
         String signature = pdc.get(ItemKeys.SIGNATURE, PersistentDataType.STRING);
         if (serialText == null || itemType == null || issuedAt == null || signature == null) {
-            return CompletableFuture.completedFuture(new ValidationResult(Validation.NOT_SERIALIZED, null));
+            return java.util.Optional.empty();
         }
         long denominationValue = denomination == null ? 0L : denomination;
         if (!signer.verify(signature, serialText, itemType, denominationValue, issuedAt)) {
-            return CompletableFuture.completedFuture(new ValidationResult(Validation.TAMPERED, null));
+            return java.util.Optional.empty();
         }
-        UUID serial = UUID.fromString(serialText);
+        return java.util.Optional.of(new PdcData(
+                UUID.fromString(serialText), itemType, denominationValue, issuedAt));
+    }
+
+    /** Reads PDC and verifies HMAC synchronously, then checks the DB record. */
+    public CompletableFuture<ValidationResult> validate(ItemStack item, ItemStatus expectedStatus) {
+        if (item == null || !item.hasItemMeta()) {
+            return CompletableFuture.completedFuture(new ValidationResult(Validation.NOT_SERIALIZED, null));
+        }
+        PersistentDataContainer pdc = item.getItemMeta().getPersistentDataContainer();
+        String signaturePresent = pdc.get(ItemKeys.SIGNATURE, PersistentDataType.STRING);
+        java.util.Optional<PdcData> data = readVerified(item);
+        if (data.isEmpty()) {
+            return CompletableFuture.completedFuture(new ValidationResult(
+                    signaturePresent == null ? Validation.NOT_SERIALIZED : Validation.TAMPERED, null));
+        }
+        UUID serial = data.get().serial();
         return databaseManager.db().supply(connection -> repository.find(connection, serial))
                 .thenApply(found -> found
                         .map(record -> record.status() == expectedStatus
@@ -90,7 +113,9 @@ public final class SerializedItemService {
         return databaseManager.db().inTransaction(connection -> repository.transition(connection, serial, from, to));
     }
 
-    private ItemStack stamp(ItemStack stack, Component displayName, SerializedItem record) {
+    /** Builds the stamped single-item stack for an already-persisted record. */
+    public ItemStack toItemStack(SerializedItem record, Material material, Component displayName) {
+        ItemStack stack = new ItemStack(material, 1);
         ItemMeta meta = stack.getItemMeta();
         meta.displayName(displayName);
         PersistentDataContainer pdc = meta.getPersistentDataContainer();

@@ -1,0 +1,17 @@
+# Banking module (Milestone 2). All prices/limits configurable (rule 11).
+banking:
+  enabled: true
+  # Physical banknote denominations, whole euros, any order.
+  denominations-euro: [500, 200, 100, 50, 20, 10, 5]
+  atm:
+    # When true, /atm works only near a POI of one of these types.
+    require-poi: true
+    poi-types: [ATM, BANK_TERMINAL]
+    range-blocks: 4
+    quick-amounts-euro: [50, 100, 500]
+  iban:
+    # Fictional bank/branch codes used in generated Italian IBANs.
+    abi: "05428"
+    cab: "11101"
+  check-expiry-days: 7
+  statement-entries: 5

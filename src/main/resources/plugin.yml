@@ -21,6 +21,28 @@ commands:
   setnick:
     description: Set or remove the VIP nickname
     usage: /setnick <nickname|reset|off>
+  iban:
+    description: Show IBAN, balance, and account state
+    usage: /iban
+  atm:
+    description: ATM menu and withdrawals
+    usage: /atm [preleva <euro>]
+    aliases: [banca, bancomat]
+  bonifico:
+    description: Transfer money by IBAN or player name
+    usage: /bonifico <IBAN|player> <euro>
+  assegno:
+    description: Issue a payee-specific check
+    usage: /assegno <player> <euro>
+  incassa:
+    description: Redeem the check held in the main hand
+    usage: /incassa
+  banchiere:
+    description: Bank employee operations
+    usage: /banchiere <apri|carta|revoca> <player>
+  sequestro:
+    description: Bank director account freeze/unfreeze
+    usage: /sequestro <player> <congela|scongela> <reason>
 permissions:
   afterlife.admin:
     description: Administrative diagnostics
@@ -31,3 +53,12 @@ permissions:
   afterlife.vip.nickname:
     description: Custom short nametag nickname
     default: false
+  afterlife.bank.user:
+    description: ATM, IBAN, transfers, checks
+    default: true
+  afterlife.bank.banker:
+    description: Account and card management
+    default: op
+  afterlife.bank.director:
+    description: Account freezes and bank administration
+    default: op
