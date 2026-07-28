@@ -85,6 +85,11 @@ reconcile:
   ok: "<green>Nessun difetto — <transactions> transazioni e <accounts> conti verificati.</green>"
   defect: "<red> - <detail></red>"
 
+economy:
+  header: "<gray>Report economico (ultime 24h) — flusso netto verso i giocatori:</gray>"
+  entry: "<dark_gray> - </dark_gray><white><reason></white> <gray>(<txns> tx)</gray> <white><sign><amount></white>"
+  summary: "<gray>Creato: <green><created></green> — Distrutto: <red><destroyed></red></gray>"
+
 org:
   created: "<green>Organizzazione <white><name></white> creata. IBAN tesoreria: <white><iban></white></green>"
   usage: "<gray>Uso: <yellow>/afterlife setup org create <tipo> <nome> [nome visibile]</yellow></gray>"

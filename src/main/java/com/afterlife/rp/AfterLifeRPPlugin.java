@@ -57,6 +57,7 @@ import com.afterlife.rp.shared.economy.AccountRepository;
 import com.afterlife.rp.shared.economy.AccountService;
 import com.afterlife.rp.shared.economy.LedgerRepository;
 import com.afterlife.rp.shared.economy.LedgerService;
+import com.afterlife.rp.shared.economy.EconomyReportService;
 import com.afterlife.rp.shared.economy.PendingDeliveryService;
 import com.afterlife.rp.shared.economy.ReconciliationService;
 import com.afterlife.rp.shared.gui.GuiManager;
@@ -173,6 +174,7 @@ public final class AfterLifeRPPlugin extends JavaPlugin {
         PendingDeliveryService pendingDeliveryService = new PendingDeliveryService(databaseManager);
         ReconciliationService reconciliationService =
                 new ReconciliationService(databaseManager, auditService);
+        EconomyReportService economyReportService = new EconomyReportService(databaseManager);
 
         guiManager = new GuiManager(this, Duration.ofSeconds(coreConfig.guiSessionTimeoutSeconds()));
         guiManager.start();
@@ -495,7 +497,8 @@ public final class AfterLifeRPPlugin extends JavaPlugin {
         AfterLifeCommand afterLifeCommand = new AfterLifeCommand(
                 this, databaseManager, integrationManager, poiService,
                 itemService, coreConfig, messages, reconciliationService,
-                accountService, bankingService, legalService, realEstateService);
+                accountService, bankingService, legalService, realEstateService,
+                economyReportService);
         PluginCommand rootCommand = Objects.requireNonNull(getCommand("afterlife"));
         rootCommand.setExecutor(afterLifeCommand);
         rootCommand.setTabCompleter(afterLifeCommand);
@@ -515,6 +518,22 @@ public final class AfterLifeRPPlugin extends JavaPlugin {
                                 getLogger().severe("RECONCILE DEFECT: " + defect));
                     }
                 }), 20L * 300, 20L * 86400);
+
+        // Daily economy source/sink report to the log (§7.5, §16).
+        Bukkit.getScheduler().runTaskTimerAsynchronously(this, () -> {
+            if (!databaseManager.ready()) {
+                return;
+            }
+            economyReportService.report(24).thenAccept(report -> {
+                getLogger().info("Economy 24h — created "
+                        + com.afterlife.rp.shared.economy.Money.format(report.totalCreated())
+                        + ", destroyed "
+                        + com.afterlife.rp.shared.economy.Money.format(report.totalDestroyed()));
+                report.flows().forEach(flow -> getLogger().info("  " + flow.reason() + ": "
+                        + com.afterlife.rp.shared.economy.Money.format(flow.netToPlayers())
+                        + " (" + flow.transactions() + " tx)"));
+            });
+        }, 20L * 360, 20L * 86400);
 
         databaseManager.start().thenAccept(state -> {
             if (state != DatabaseManager.State.READY) {

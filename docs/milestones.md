@@ -14,7 +14,7 @@ gate with a report (§18).
 | M6 — EMS | ✅ done (2026-07-28) | Injury engine, tool-sequence treatments + hospital billing, traceable batches, certificates, Citizens NPC emergencies, toxic extraction → illegal Adrenaline |
 | M7 — Nightclub | ✅ done (2026-07-28) | POS + receipts + stock, shaker quality minigame, VIP/bouncer/blacklist, DJ effects, criminal escrow, anonymous bounties, manager dashboard |
 | M8 — Police, crime, cross-module RP | ✅ done (2026-07-28) | Warrants, authorized searches, seizures→evidence, K-9, scoped account checks, alerts; gang sales, drug trips (hideEntity, no ProtocolLib — ADR 0004), sealing, ATM hacking from M5 circuit board |
-| M9 — Balance, content, launch | ⬜ | Item provider decision required first (ADR 0002) |
+| M9 — Balance, content, launch | 🔶 in progress | Done: economy report, backup/restore (rehearsed), ops docs, exploit matrix. Blocked on item provider: item catalog, player manuals |
 
 ## M0/M1 exit-gate evidence
 

@@ -10,6 +10,7 @@ import com.afterlife.rp.module.banking.BankingService;
 import com.afterlife.rp.module.legal.LegalService;
 import com.afterlife.rp.module.realestate.RealEstateService;
 import com.afterlife.rp.shared.economy.AccountService;
+import com.afterlife.rp.shared.economy.EconomyReportService;
 import com.afterlife.rp.shared.economy.Money;
 import com.afterlife.rp.shared.economy.ReconciliationService;
 import com.afterlife.rp.shared.items.SerializedItemService;
@@ -54,6 +55,7 @@ public final class AfterLifeCommand implements CommandExecutor, TabCompleter {
     private final BankingService bankingService;
     private final LegalService legalService;
     private final RealEstateService realEstateService;
+    private final EconomyReportService economyReportService;
 
     public AfterLifeCommand(
             JavaPlugin plugin,
@@ -67,7 +69,8 @@ public final class AfterLifeCommand implements CommandExecutor, TabCompleter {
             AccountService accountService,
             BankingService bankingService,
             LegalService legalService,
-            RealEstateService realEstateService) {
+            RealEstateService realEstateService,
+            EconomyReportService economyReportService) {
         this.plugin = plugin;
         this.databaseManager = databaseManager;
         this.integrationManager = integrationManager;
@@ -80,6 +83,7 @@ public final class AfterLifeCommand implements CommandExecutor, TabCompleter {
         this.bankingService = bankingService;
         this.legalService = legalService;
         this.realEstateService = realEstateService;
+        this.economyReportService = economyReportService;
     }
 
     @Override
@@ -95,6 +99,7 @@ public final class AfterLifeCommand implements CommandExecutor, TabCompleter {
             case "setup" -> setup(sender, args);
             case "debug" -> debug(sender, args);
             case "reconcile" -> reconcile(sender);
+            case "economy" -> economy(sender);
             default -> sendUsage(sender, label);
         }
         return true;
@@ -102,7 +107,30 @@ public final class AfterLifeCommand implements CommandExecutor, TabCompleter {
 
     private void sendUsage(CommandSender sender, String label) {
         messages.send(sender, "general.unknown-subcommand",
-                Placeholder.unparsed("usage", "/" + label + " <version|health|setup|debug|reconcile>"));
+                Placeholder.unparsed("usage",
+                        "/" + label + " <version|health|setup|debug|reconcile|economy>"));
+    }
+
+    private void economy(CommandSender sender) {
+        if (!sender.hasPermission(ADMIN)) {
+            messages.send(sender, "general.no-permission");
+            return;
+        }
+        if (!databaseManager.ready()) {
+            messages.send(sender, "general.db-unavailable");
+            return;
+        }
+        messages.send(sender, "economy.header");
+        economyReportService.report(24).thenAccept(report -> {
+            report.flows().forEach(flow -> messages.send(sender, "economy.entry",
+                    Placeholder.unparsed("reason", flow.reason()),
+                    Placeholder.unparsed("sign", flow.netToPlayers() >= 0 ? "+" : ""),
+                    Placeholder.unparsed("amount", Money.format(flow.netToPlayers())),
+                    Placeholder.unparsed("txns", String.valueOf(flow.transactions()))));
+            messages.send(sender, "economy.summary",
+                    Placeholder.unparsed("created", Money.format(report.totalCreated())),
+                    Placeholder.unparsed("destroyed", Money.format(report.totalDestroyed())));
+        });
     }
 
     private void reconcile(CommandSender sender) {
@@ -486,7 +514,8 @@ public final class AfterLifeCommand implements CommandExecutor, TabCompleter {
     public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command,
             @NotNull String alias, String @NotNull [] args) {
         if (args.length == 1) {
-            return filter(List.of("version", "health", "setup", "debug", "reconcile"), args[0]);
+            return filter(List.of("version", "health", "setup", "debug", "reconcile", "economy"),
+                    args[0]);
         }
         if (args.length == 2 && args[0].equalsIgnoreCase("setup")) {
             return filter(List.of("poi", "org", "license", "property"), args[1]);
