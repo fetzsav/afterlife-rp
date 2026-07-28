@@ -17,6 +17,12 @@ import com.afterlife.rp.module.banking.BankingCommands;
 import com.afterlife.rp.module.banking.BankingConfig;
 import com.afterlife.rp.module.banking.BankingListener;
 import com.afterlife.rp.module.banking.BankingService;
+import com.afterlife.rp.module.legal.LegalCommands;
+import com.afterlife.rp.module.legal.LegalConfig;
+import com.afterlife.rp.module.legal.LegalService;
+import com.afterlife.rp.module.realestate.RealEstateCommands;
+import com.afterlife.rp.module.realestate.RealEstateConfig;
+import com.afterlife.rp.module.realestate.RealEstateService;
 import com.afterlife.rp.shared.economy.AccountRepository;
 import com.afterlife.rp.shared.economy.AccountService;
 import com.afterlife.rp.shared.economy.LedgerRepository;
@@ -161,10 +167,78 @@ public final class AfterLifeRPPlugin extends JavaPlugin {
                     getLogger()), this);
         }
 
+        // Legal module (M3).
+        LegalService legalService = null;
+        try {
+            LegalConfig legalConfig = LegalConfig.from(
+                    ModuleConfigs.load(this, "legal").getConfigurationSection("legal"));
+            if (legalConfig.enabled()) {
+                legalService = new LegalService(databaseManager, accountService, ledgerService,
+                        itemRepository, auditService, legalConfig);
+                LegalCommands legalCommands = new LegalCommands(databaseManager, accountService,
+                        legalService, itemService, messages);
+                for (String name : List.of("contratto", "valida_contratto", "fedina",
+                        "pulisci_fedina", "arresto", "rilascio", "avvocato", "ricorso",
+                        "prova", "licenza")) {
+                    Objects.requireNonNull(getCommand(name)).setExecutor(legalCommands);
+                }
+            } else {
+                getLogger().info("Legal module disabled in modules/legal.yml");
+            }
+        } catch (ConfigValidationException e) {
+            e.errors().forEach(error -> getLogger().severe("Legal config: " + error));
+            getLogger().severe("Legal module disabled until modules/legal.yml is fixed.");
+        }
+
+        // Real-estate module (M3); requires banking for dirty-money issuance.
+        RealEstateService realEstateService = null;
+        if (bankingService != null) {
+            try {
+                RealEstateConfig realEstateConfig = RealEstateConfig.from(
+                        ModuleConfigs.load(this, "realestate").getConfigurationSection("realestate"));
+                if (realEstateConfig.enabled()) {
+                    realEstateService = new RealEstateService(databaseManager, accountService,
+                            ledgerService, itemRepository, pendingDeliveryService, auditService,
+                            realEstateConfig);
+                    RealEstateCommands realEstateCommands = new RealEstateCommands(databaseManager,
+                            accountService, realEstateService, bankingService, itemService, messages);
+                    for (String name : List.of("luoghidisponibili", "luoghisporchi", "agenzia",
+                            "cambia_serratura", "cassaforte", "chiave")) {
+                        Objects.requireNonNull(getCommand(name)).setExecutor(realEstateCommands);
+                    }
+                    RealEstateService finalService = realEstateService;
+                    long periodTicks = 20L * 60 * realEstateConfig.powerCheckMinutes();
+                    Bukkit.getScheduler().runTaskTimerAsynchronously(this, () -> {
+                        if (!databaseManager.ready()) {
+                            return;
+                        }
+                        finalService.tickPowerAnomalies().thenAccept(alerts ->
+                                databaseManager.db().onMain(() -> alerts.forEach(alert ->
+                                        Bukkit.getOnlinePlayers().stream()
+                                                .filter(p -> p.hasPermission("afterlife.police.officer"))
+                                                .forEach(p -> messages.send(p, "estate.power-alert",
+                                                        net.kyori.adventure.text.minimessage.tag.resolver
+                                                                .Placeholder.unparsed("name",
+                                                                        alert.propertyName()),
+                                                        net.kyori.adventure.text.minimessage.tag.resolver
+                                                                .Placeholder.unparsed("district",
+                                                                        alert.district()))))));
+                    }, periodTicks, periodTicks);
+                } else {
+                    getLogger().info("Real-estate module disabled in modules/realestate.yml");
+                }
+            } catch (ConfigValidationException e) {
+                e.errors().forEach(error -> getLogger().severe("Real-estate config: " + error));
+                getLogger().severe("Real-estate module disabled until modules/realestate.yml is fixed.");
+            }
+        } else {
+            getLogger().info("Real-estate module inactive: it requires the banking module.");
+        }
+
         AfterLifeCommand afterLifeCommand = new AfterLifeCommand(
                 this, databaseManager, integrationManager, poiService,
                 itemService, coreConfig, messages, reconciliationService,
-                accountService, bankingService);
+                accountService, bankingService, legalService, realEstateService);
         PluginCommand rootCommand = Objects.requireNonNull(getCommand("afterlife"));
         rootCommand.setExecutor(afterLifeCommand);
         rootCommand.setTabCompleter(afterLifeCommand);

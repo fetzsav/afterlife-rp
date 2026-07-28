@@ -57,6 +57,9 @@ public record DatabaseSettings(
     }
 
     public String jdbcUrl() {
-        return "jdbc:mariadb://" + host + ":" + port + "/" + database;
+        // timezone=auto aligns the session time zone with the JVM so DATETIME
+        // round-trips are consistent; authoritative time rules still compare
+        // in SQL against the database clock.
+        return "jdbc:mariadb://" + host + ":" + port + "/" + database + "?timezone=auto";
     }
 }

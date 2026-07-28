@@ -1,0 +1,14 @@
+# Real-estate module (Milestone 3): legal sales, keys, dirty rentals,
+# black safe, power anomalies.
+realestate:
+  enabled: true
+  # System account (accounts.code) that receives legal sale proceeds until the
+  # agency organization takes over in a later milestone.
+  revenue-account: government_budget
+  power:
+    # Abnormal consumption accumulates for illegally rented properties without
+    # a utility contract; reaching the threshold triggers a police alert that
+    # names the building/district but never the occupant (§9.7).
+    check-minutes: 60
+    increment-per-check: 10
+    alert-threshold: 40

@@ -7,6 +7,8 @@ import com.afterlife.rp.integration.Adapter;
 import com.afterlife.rp.integration.IntegrationManager;
 import com.afterlife.rp.module.banking.BankingItems;
 import com.afterlife.rp.module.banking.BankingService;
+import com.afterlife.rp.module.legal.LegalService;
+import com.afterlife.rp.module.realestate.RealEstateService;
 import com.afterlife.rp.shared.economy.AccountService;
 import com.afterlife.rp.shared.economy.Money;
 import com.afterlife.rp.shared.economy.ReconciliationService;
@@ -50,6 +52,8 @@ public final class AfterLifeCommand implements CommandExecutor, TabCompleter {
     private final ReconciliationService reconciliationService;
     private final AccountService accountService;
     private final BankingService bankingService;
+    private final LegalService legalService;
+    private final RealEstateService realEstateService;
 
     public AfterLifeCommand(
             JavaPlugin plugin,
@@ -61,7 +65,9 @@ public final class AfterLifeCommand implements CommandExecutor, TabCompleter {
             Messages messages,
             ReconciliationService reconciliationService,
             AccountService accountService,
-            BankingService bankingService) {
+            BankingService bankingService,
+            LegalService legalService,
+            RealEstateService realEstateService) {
         this.plugin = plugin;
         this.databaseManager = databaseManager;
         this.integrationManager = integrationManager;
@@ -72,6 +78,8 @@ public final class AfterLifeCommand implements CommandExecutor, TabCompleter {
         this.reconciliationService = reconciliationService;
         this.accountService = accountService;
         this.bankingService = bankingService;
+        this.legalService = legalService;
+        this.realEstateService = realEstateService;
     }
 
     @Override
@@ -165,6 +173,14 @@ public final class AfterLifeCommand implements CommandExecutor, TabCompleter {
             orgSetup(sender, args);
             return;
         }
+        if (args.length >= 2 && args[1].equalsIgnoreCase("license")) {
+            licenseSetup(sender, args);
+            return;
+        }
+        if (args.length >= 2 && args[1].equalsIgnoreCase("property")) {
+            propertySetup(sender, args);
+            return;
+        }
         if (args.length < 2 || !args[1].equalsIgnoreCase("poi")) {
             messages.send(sender, "poi.usage");
             return;
@@ -177,6 +193,88 @@ public final class AfterLifeCommand implements CommandExecutor, TabCompleter {
             case "report" -> poiReport(sender);
             default -> messages.send(sender, "poi.usage");
         }
+    }
+
+    private void licenseSetup(CommandSender sender, String[] args) {
+        // /afterlife setup license <grant|revoke> <player> <type> [days]
+        if (legalService == null || args.length < 5) {
+            messages.send(sender, "legal.license-usage");
+            return;
+        }
+        Player target = org.bukkit.Bukkit.getPlayerExact(args[3]);
+        if (target == null) {
+            messages.send(sender, "bank.target-not-found");
+            return;
+        }
+        String type = args[4].toUpperCase(Locale.ROOT);
+        java.util.UUID actor = sender instanceof Player player ? player.getUniqueId() : null;
+        if (args[2].equalsIgnoreCase("grant")) {
+            Integer days = null;
+            if (args.length >= 6) {
+                try {
+                    days = Integer.parseInt(args[5]);
+                } catch (NumberFormatException e) {
+                    messages.send(sender, "legal.license-usage");
+                    return;
+                }
+            }
+            legalService.grantLicense(target.getUniqueId(), type, days, actor, sender.getName())
+                    .thenAccept(id -> messages.send(sender, "legal.license-granted",
+                            Placeholder.unparsed("type", type),
+                            Placeholder.unparsed("player", target.getName())));
+        } else if (args[2].equalsIgnoreCase("revoke")) {
+            legalService.revokeLicense(target.getUniqueId(), type, actor, sender.getName())
+                    .thenAccept(revoked -> messages.send(sender,
+                            revoked ? "legal.license-revoked" : "legal.license-usage",
+                            Placeholder.unparsed("type", type),
+                            Placeholder.unparsed("player", target.getName())));
+        } else {
+            messages.send(sender, "legal.license-usage");
+        }
+    }
+
+    private void propertySetup(CommandSender sender, String[] args) {
+        // /afterlife setup property create <HOUSE|APARTMENT> <name> <price-euro> [region|-] [dirty]
+        if (realEstateService == null || args.length < 6 || !args[2].equalsIgnoreCase("create")) {
+            messages.send(sender, "estate.agenzia-usage");
+            return;
+        }
+        if (!(sender instanceof Player player)) {
+            messages.send(sender, "general.player-only");
+            return;
+        }
+        String type = args[3].toUpperCase(Locale.ROOT);
+        String name = args[4];
+        Long priceCents = Money.parseWholeEuros(args[5]);
+        if (priceCents == null) {
+            messages.send(sender, "bank.invalid-amount");
+            return;
+        }
+        String region = args.length >= 7 && !args[6].equals("-") ? args[6] : null;
+        boolean dirty = args.length >= 8 && args[7].equalsIgnoreCase("dirty");
+        if (region != null && integrationManager.worldGuard() != null
+                && integrationManager.worldGuard().available()
+                && !integrationManager.worldGuard().regionExists(player.getWorld(), region)) {
+            messages.send(sender, "poi.region-not-found", Placeholder.unparsed("region", region));
+            return;
+        }
+        var location = player.getLocation();
+        realEstateService.createProperty(name, type, player.getWorld().getName(),
+                        location.getX(), location.getY(), location.getZ(), region, priceCents, dirty,
+                        player.getUniqueId(), player.getName())
+                .whenComplete((property, error) -> {
+                    if (error != null) {
+                        messages.send(sender, "estate.not-available");
+                        return;
+                    }
+                    messages.send(sender, "estate.list-entry",
+                            Placeholder.unparsed("name", property.name()),
+                            Placeholder.unparsed("type", property.type()),
+                            Placeholder.unparsed("price", Money.format(property.price())),
+                            Placeholder.unparsed("world", property.world()),
+                            Placeholder.unparsed("x", String.valueOf((int) property.x())),
+                            Placeholder.unparsed("z", String.valueOf((int) property.z())));
+                });
     }
 
     private void orgSetup(CommandSender sender, String[] args) {
@@ -391,7 +489,7 @@ public final class AfterLifeCommand implements CommandExecutor, TabCompleter {
             return filter(List.of("version", "health", "setup", "debug", "reconcile"), args[0]);
         }
         if (args.length == 2 && args[0].equalsIgnoreCase("setup")) {
-            return filter(List.of("poi", "org"), args[1]);
+            return filter(List.of("poi", "org", "license", "property"), args[1]);
         }
         if (args.length == 3 && args[0].equalsIgnoreCase("setup")) {
             return filter(List.of("create", "remove", "list", "report"), args[2]);

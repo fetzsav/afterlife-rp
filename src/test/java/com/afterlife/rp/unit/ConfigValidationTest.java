@@ -33,7 +33,7 @@ class ConfigValidationTest {
                   password: secret
                   pool-size: 4
                 """).getConfigurationSection("database"));
-        assertEquals("jdbc:mariadb://localhost:3306/afterlife", settings.jdbcUrl());
+        assertEquals("jdbc:mariadb://localhost:3306/afterlife?timezone=auto", settings.jdbcUrl());
     }
 
     @Test

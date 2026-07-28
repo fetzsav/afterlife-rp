@@ -8,7 +8,7 @@ gate with a report (§18).
 | M0 — Repository & bootstrap | ✅ done (2026-07-28) | Gradle 9.6.1, Java 25 toolchain, Paper 26.2, Flyway V1, Docker MariaDB, bootable plugin |
 | M1 — Shared foundation | ✅ done (2026-07-28) | Identity/public IDs, audit, GUI framework, serialized items + HMAC, POI admin, adapters |
 | M2 — Economy & banking | ✅ done (2026-07-28) | Double-entry ledger, Vault bridge (ADR 0003), notes/dirty money/checks/cards, IBAN/ATM GUI, freeze, reconciliation, pending deliveries |
-| M3 — Civic, contracts, property | ⬜ | |
+| M3 — Civic, contracts, property | ✅ done (2026-07-28) | Licenses, Book&Quill contracts + lawyer validation, criminal records + expungement, detention + /ricorso, audited evidence custody, property sales/keys/locks, dirty rentals + black safe, power anomalies |
 | M4 — Vehicles, mechanic, used cars | ⬜ | Vehicle plugin decision required first (ADR 0002) |
 | M5 — Dispatch jobs | ⬜ | |
 | M6 — EMS | ⬜ | |
@@ -46,3 +46,19 @@ gate with a report (§18).
 - Commands: /iban, /atm (+GUI, POI-gated, card-gated), /bonifico, /assegno,
   /incassa, /banchiere, /sequestro, /afterlife reconcile, setup org create,
   debug dirtymoney.
+
+## M3 exit-gate evidence
+
+- CivicIT (Testcontainers): concurrent sale of one property → exactly one
+  owner; lock bump revokes old keys and the reissued key opens; expungement
+  archives rows (status EXPUNGED, never deleted) with fee + audit; open/major
+  records block it; unauthorized evidence access fails AND is audited, while
+  authorized reads extend the chain of custody; one active detention per
+  player, appeal succeeds only on the machine-verifiable overrun rule; dirty
+  rental consumes physical dirty notes exactly once into the black safe,
+  replay fails, file destruction keeps the row + audit; contracts validate
+  exactly once.
+- Simplifications noted for later hardening: power anomalies use per-hour
+  accumulation (not per-interaction weights); door/region enforcement of keys
+  arrives with the door registry (§12); lawyer evidence access waits for the
+  case system (M8 cross-module links).

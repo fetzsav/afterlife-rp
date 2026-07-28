@@ -43,6 +43,54 @@ commands:
   sequestro:
     description: Bank director account freeze/unfreeze
     usage: /sequestro <player> <congela|scongela> <reason>
+  contratto:
+    description: Propose and sign binding contracts
+    usage: /contratto <proponi <player>|firma>
+  valida_contratto:
+    description: Lawyer contract validation
+    usage: /valida_contratto
+  fedina:
+    description: Criminal record viewing and police management
+    usage: /fedina [player] | aggiungi ... | sconta <id>
+  pulisci_fedina:
+    description: Lawyer criminal record rehabilitation
+    usage: /pulisci_fedina <player>
+  arresto:
+    description: Start a detention with timer
+    usage: /arresto <player> [minutes]
+  rilascio:
+    description: Release a detained player
+    usage: /rilascio <player>
+  avvocato:
+    description: Request a lawyer while detained
+    usage: /avvocato
+  ricorso:
+    description: Lawyer appeal against overdue detention
+    usage: /ricorso <player>
+  prova:
+    description: Evidence creation and authorized viewing
+    usage: /prova <crea <description>|vedi <id>>
+  licenza:
+    description: Show your active licenses
+    usage: /licenza
+  luoghidisponibili:
+    description: List properties for sale
+    usage: /luoghidisponibili
+  luoghisporchi:
+    description: List illegal rental properties (director)
+    usage: /luoghisporchi
+  agenzia:
+    description: Real-estate agency operations
+    usage: /agenzia <vendi|affittasporco|distruggi_file>
+  cambia_serratura:
+    description: Replace a property lock, revoking old keys
+    usage: /cambia_serratura <property> <reason>
+  cassaforte:
+    description: Agency black safe (director)
+    usage: /cassaforte [preleva <euro>]
+  chiave:
+    description: Check the key held in the main hand
+    usage: /chiave
 permissions:
   afterlife.admin:
     description: Administrative diagnostics
@@ -61,4 +109,16 @@ permissions:
     default: op
   afterlife.bank.director:
     description: Account freezes and bank administration
+    default: op
+  afterlife.legal.lawyer:
+    description: Contracts, cases, records, appeals
+    default: op
+  afterlife.police.officer:
+    description: Police tools and authorized searches
+    default: op
+  afterlife.realestate.agent:
+    description: Legal property actions
+    default: op
+  afterlife.realestate.director:
+    description: Dirty properties and black safe
     default: op

@@ -1,0 +1,14 @@
+# Legal module (Milestone 3): contracts, criminal records, detention, evidence.
+legal:
+  enabled: true
+  detention:
+    default-minutes: 15
+    max-minutes: 45
+  expunge:
+    # /pulisci_fedina requirements (§9.2): served MINOR offenses only, a
+    # crime-free period, and a fee paid by the client to the government.
+    crime-free-days: 7
+    fee-euro: 500
+  contract:
+    max-content-chars: 4000
+    proposal-timeout-seconds: 120
