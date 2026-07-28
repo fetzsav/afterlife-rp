@@ -1,0 +1,67 @@
+# Nightclub module (Milestone 7, §9.11).
+nightclub:
+  enabled: true
+  pos:
+    range-blocks: 5
+    poi-types: [POS_TERMINAL]
+    order-timeout-seconds: 60
+  # Product catalog: retail defaults (managers adjust within min/max), wholesale
+  # costs, and drink effects "EFFECT:amplifier:seconds" (empty = no effect).
+  products:
+    vodka_redbull:
+      name: "Vodka Red Bull"
+      retail-euro: 12
+      retail-min-euro: 8
+      retail-max-euro: 25
+      wholesale-euro: 6
+      effect: "SPEED:1:3"
+    absinthe:
+      name: "Assenzio Puro"
+      retail-euro: 18
+      retail-min-euro: 12
+      retail-max-euro: 35
+      wholesale-euro: 9
+      effect: "NIGHT_VISION:0:60"
+      side-effect: "NAUSEA:0:10"
+    tequila_boom:
+      name: "Tequila Boom Boom"
+      retail-euro: 15
+      retail-min-euro: 10
+      retail-max-euro: 30
+      wholesale-euro: 8
+      effect: "RESISTANCE:0:5"
+    lemonade:
+      name: "Limonata"
+      retail-euro: 5
+      retail-min-euro: 3
+      retail-max-euro: 10
+      wholesale-euro: 2
+      effect: ""
+      cures: true
+  drink:
+    cooldown-seconds: 60
+    masterwork-duration-multiplier: 2.0
+    diluted-duration-multiplier: 0.5
+  shaker:
+    poi-types: [SHAKER_STATION]
+  commission:
+    default-percent: 10
+  escrow:
+    commission-percent: 5
+    timeout-minutes: 15
+  bounty:
+    bartender-fee-percent: 5
+    min-euro: 100
+  happy-hour:
+    discount-percent: 20
+    duration-minutes: 30
+  security:
+    club-region: nightclub
+    vip-region: nightclub_vip
+    weapon-materials: [DIAMOND_SWORD, NETHERITE_SWORD, IRON_SWORD, DIAMOND_AXE, NETHERITE_AXE, CROSSBOW, BOW, MACE]
+  dj:
+    poi-types: [DJ_BOOTH]
+    effect-seconds: 20
+    cooldown-seconds: 45
+  restock:
+    delivery-delay-minutes: 10

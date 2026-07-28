@@ -71,10 +71,31 @@ public final class BankingListener implements Listener {
             if (!claimed) {
                 return;
             }
+            // Escrow returns: redeliver the EXISTING serialized item unchanged.
+            if (pending.itemType().startsWith("escrow_item:")) {
+                UUID serial = UUID.fromString(
+                        pending.itemType().substring("escrow_item:".length()));
+                databaseManager.db()
+                        .supply(connection -> new com.afterlife.rp.shared.items
+                                .SerializedItemRepository().find(connection, serial))
+                        .thenAccept(record -> databaseManager.db().onMain(() -> {
+                            if (record.isEmpty() || !player.isOnline()) {
+                                return;
+                            }
+                            var stack = BankingItems.toStack(itemService, record.get());
+                            player.getInventory().addItem(stack).values().forEach(rest ->
+                                    player.getWorld().dropItemNaturally(player.getLocation(), rest));
+                        }));
+                return;
+            }
+            // Escrow refunds/fees: fresh dirty notes of the stored denomination.
+            String effectiveType = pending.itemType().startsWith("escrow_note:")
+                    ? com.afterlife.rp.shared.items.ItemTypes.DIRTY_MONEY
+                    : pending.itemType();
             // Fresh serials: the originals were voided when delivery failed.
             for (int i = 0; i < pending.quantity(); i++) {
                 databaseManager.db().<SerializedItem>inTransaction(connection -> {
-                    SerializedItem item = new SerializedItem(UUID.randomUUID(), pending.itemType(),
+                    SerializedItem item = new SerializedItem(UUID.randomUUID(), effectiveType,
                             pending.playerUuid(), pending.denomination(), ItemStatus.ISSUED,
                             null, System.currentTimeMillis(), null);
                     new com.afterlife.rp.shared.items.SerializedItemRepository()

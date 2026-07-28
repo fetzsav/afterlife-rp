@@ -32,6 +32,10 @@ import com.afterlife.rp.module.ems.EmsService;
 import com.afterlife.rp.module.legal.LegalCommands;
 import com.afterlife.rp.module.legal.LegalConfig;
 import com.afterlife.rp.module.legal.LegalService;
+import com.afterlife.rp.module.nightclub.NightclubCommands;
+import com.afterlife.rp.module.nightclub.NightclubConfig;
+import com.afterlife.rp.module.nightclub.NightclubListener;
+import com.afterlife.rp.module.nightclub.NightclubService;
 import com.afterlife.rp.shared.missions.JobSessionService;
 import com.afterlife.rp.shared.missions.MissionListener;
 import com.afterlife.rp.shared.missions.MissionRepository;
@@ -333,6 +337,40 @@ public final class AfterLifeRPPlugin extends JavaPlugin {
             getLogger().info("Delivery module inactive: it requires the banking module.");
         }
 
+        // Nightclub module (M7); requires banking for dirty-money flows.
+        NightclubService nightclubService = null;
+        if (bankingService != null) {
+            try {
+                NightclubConfig nightclubConfig = NightclubConfig.from(
+                        ModuleConfigs.load(this, "nightclub").getConfigurationSection("nightclub"));
+                if (nightclubConfig.enabled()) {
+                    nightclubService = new NightclubService(databaseManager, accountService,
+                            ledgerService, bankingService, itemRepository, itemService,
+                            pendingDeliveryService, auditService, nightclubConfig);
+                    Objects.requireNonNull(getCommand("club")).setExecutor(new NightclubCommands(
+                            this, databaseManager, nightclubService, accountService, itemService,
+                            poiService, guiManager, messages));
+                    getServer().getPluginManager().registerEvents(new NightclubListener(
+                            this, databaseManager, nightclubService, itemService,
+                            integrationManager.worldGuard(), messages), this);
+                    NightclubService clubRef = nightclubService;
+                    Bukkit.getScheduler().runTaskTimerAsynchronously(this, () -> {
+                        if (databaseManager.ready()) {
+                            clubRef.deliverDueRestocks();
+                            clubRef.expireStaleEscrows();
+                        }
+                    }, 20L * 60, 20L * 60);
+                } else {
+                    getLogger().info("Nightclub module disabled in modules/nightclub.yml");
+                }
+            } catch (ConfigValidationException e) {
+                e.errors().forEach(error -> getLogger().severe("Nightclub config: " + error));
+                getLogger().severe("Nightclub module disabled until modules/nightclub.yml is fixed.");
+            }
+        } else {
+            getLogger().info("Nightclub module inactive: it requires the banking module.");
+        }
+
         // EMS module (M6).
         try {
             EmsConfig emsConfig = EmsConfig.from(
@@ -395,6 +433,8 @@ public final class AfterLifeRPPlugin extends JavaPlugin {
         Objects.requireNonNull(getCommand("setnick")).setExecutor(new SetNickCommand(
                 databaseManager, identityService, nametagService, auditService, coreConfig, messages));
 
+        NightclubService nightclubServiceFinal = nightclubService;
+
         registerVaultProvider(accountService, ledgerService);
 
         // Daily ledger reconciliation (§16); first run 5 minutes after boot.
@@ -417,6 +457,9 @@ public final class AfterLifeRPPlugin extends JavaPlugin {
                     getLogger().log(Level.SEVERE, "System account load failed", error);
                 }
             });
+            if (nightclubServiceFinal != null) {
+                nightclubServiceFinal.seedStockRows();
+            }
             poiService.load().whenComplete((count, error) -> {
                 if (error != null) {
                     getLogger().log(Level.SEVERE, "POI load failed", error);

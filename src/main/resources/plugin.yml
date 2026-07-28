@@ -102,6 +102,10 @@ commands:
     description: EMS medic job
     usage: /ems <turno|scan|cura|produci|traccia|certificato|manuale|...>
     aliases: [medico]
+  club:
+    description: Nightclub operations
+    usage: /club <vendi|conferma|shaker|scanner|blacklist|dj|escrow|taglia|...>
+    aliases: [nightclub]
 permissions:
   afterlife.admin:
     description: Administrative diagnostics
@@ -141,4 +145,16 @@ permissions:
     default: op
   afterlife.ems.medic:
     description: Diagnosis, treatment, certificates
+    default: op
+  afterlife.nightclub.bartender:
+    description: POS, mixology, escrow
+    default: op
+  afterlife.nightclub.security:
+    description: Scanner and blacklist enforcement
+    default: op
+  afterlife.nightclub.manager:
+    description: Business dashboard
+    default: op
+  afterlife.crime.boss:
+    description: Faction leader actions (anonymous bounties)
     default: op

@@ -12,7 +12,7 @@ gate with a report (§18).
 | M4 — Vehicles, mechanic, used cars | ⏸ deferred | InfiniteVehicles chosen (ADR 0002); operator will schedule; plugin purchase + install needed |
 | M5 — Dispatch jobs | ✅ done (2026-07-28) | Mission framework (one-winner rewards, restart/quit/AFK recovery), electrician (dispatch, wiring minigame, 1% circuit board), food delivery (temperature tips, sealed contraband) |
 | M6 — EMS | ✅ done (2026-07-28) | Injury engine, tool-sequence treatments + hospital billing, traceable batches, certificates, Citizens NPC emergencies, toxic extraction → illegal Adrenaline |
-| M7 — Nightclub | ⬜ | |
+| M7 — Nightclub | ✅ done (2026-07-28) | POS + receipts + stock, shaker quality minigame, VIP/bouncer/blacklist, DJ effects, criminal escrow, anonymous bounties, manager dashboard |
 | M8 — Police, crime, cross-module RP | ⬜ | ProtocolLib install needed |
 | M9 — Balance, content, launch | ⬜ | Item provider decision required first (ADR 0002) |
 
@@ -96,3 +96,22 @@ gate with a report (§18).
   is the UNCONSCIOUS injury (defibrillator) rather than a full no-death mode;
   medical tools are issued via /afterlife debug item until the item-provider
   milestone adds crafting recipes.
+
+## M7 exit-gate evidence
+
+- NightclubIT (Testcontainers): a POS order settles exactly once under
+  concurrent accepts (state one-winner + stock guard + payment + receipts in
+  one transaction); the last stock unit sells once and stock never goes
+  negative; escrow deposits redeem once (a replayed dirty note pays nothing),
+  locked deals cannot be cancelled, the bartender confirm swaps ownership
+  exactly once, and returns/payouts travel as durable pending deliveries;
+  bounties escrow funds at creation, pay once with the bartender fee, and hide
+  the sponsor from players while keeping them in the audit trail; happy hour
+  discounts proposed orders.
+- GUI abuse: drinks/receipts/deposits are serialized items on the one-shot
+  transition framework; the shaker and all menus run on the hardened GUI
+  session framework (every click cancelled at event level).
+- Simplifications: manager dashboard is command-based (GUI arrives with the
+  content milestone); track selection for the DJ is lighting/smoke only until
+  a music integration is chosen; escrow accepts serialized items only (plain
+  vanilla stacks cannot be made duplication-safe).
