@@ -9,7 +9,7 @@ gate with a report (§18).
 | M1 — Shared foundation | ✅ done (2026-07-28) | Identity/public IDs, audit, GUI framework, serialized items + HMAC, POI admin, adapters |
 | M2 — Economy & banking | ✅ done (2026-07-28) | Double-entry ledger, Vault bridge (ADR 0003), notes/dirty money/checks/cards, IBAN/ATM GUI, freeze, reconciliation, pending deliveries |
 | M3 — Civic, contracts, property | ✅ done (2026-07-28) | Licenses, Book&Quill contracts + lawyer validation, criminal records + expungement, detention + /ricorso, audited evidence custody, property sales/keys/locks, dirty rentals + black safe, power anomalies |
-| M4 — Vehicles, mechanic, used cars | ⬜ | Vehicle plugin decision required first (ADR 0002) |
+| M4 — Vehicles, mechanic, used cars | ⏸ deferred | InfiniteVehicles chosen (ADR 0002); operator will schedule; plugin purchase + install needed |
 | M5 — Dispatch jobs | ⬜ | |
 | M6 — EMS | ⬜ | |
 | M7 — Nightclub | ⬜ | |
