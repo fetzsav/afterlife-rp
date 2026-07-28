@@ -1,0 +1,16 @@
+# Electrician module (Milestone 5, §9.5).
+electrician:
+  enabled: true
+  # POI types eligible for dispatched failures (register via /afterlife setup poi).
+  poi-types: [ELECTRICAL_CABINET, TRAFFIC_LIGHT, REPEATER]
+  dispatch-interval-minutes: 20
+  mission-deadline-minutes: 20
+  reward:
+    callout-fee-euro: 40
+    complexity-multiplier-euro: 25   # x complexity 1-3
+    time-bonus-euro: 20
+    time-bonus-within-seconds: 300
+  # One server-side roll per completed repair (§9.5); never from GUI clicks.
+  circuit-board-chance: 0.01
+  minigame:
+    fuses: 4

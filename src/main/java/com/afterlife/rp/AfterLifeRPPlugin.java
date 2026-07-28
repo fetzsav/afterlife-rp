@@ -17,9 +17,21 @@ import com.afterlife.rp.module.banking.BankingCommands;
 import com.afterlife.rp.module.banking.BankingConfig;
 import com.afterlife.rp.module.banking.BankingListener;
 import com.afterlife.rp.module.banking.BankingService;
+import com.afterlife.rp.module.delivery.DeliveryCommands;
+import com.afterlife.rp.module.delivery.DeliveryConfig;
+import com.afterlife.rp.module.delivery.DeliveryListener;
+import com.afterlife.rp.module.delivery.DeliveryService;
+import com.afterlife.rp.module.electrician.ElectricianCommands;
+import com.afterlife.rp.module.electrician.ElectricianConfig;
+import com.afterlife.rp.module.electrician.ElectricianService;
 import com.afterlife.rp.module.legal.LegalCommands;
 import com.afterlife.rp.module.legal.LegalConfig;
 import com.afterlife.rp.module.legal.LegalService;
+import com.afterlife.rp.shared.missions.JobSessionService;
+import com.afterlife.rp.shared.missions.MissionListener;
+import com.afterlife.rp.shared.missions.MissionRepository;
+import com.afterlife.rp.shared.missions.MissionService;
+import com.afterlife.rp.shared.missions.MissionTracker;
 import com.afterlife.rp.module.realestate.RealEstateCommands;
 import com.afterlife.rp.module.realestate.RealEstateConfig;
 import com.afterlife.rp.module.realestate.RealEstateService;
@@ -55,6 +67,7 @@ public final class AfterLifeRPPlugin extends JavaPlugin {
     private GuiManager guiManager;
     private NametagService nametagService;
     private IdentityService identityService;
+    private MissionTracker missionTracker;
 
     @Override
     public void onEnable() {
@@ -235,6 +248,84 @@ public final class AfterLifeRPPlugin extends JavaPlugin {
             getLogger().info("Real-estate module inactive: it requires the banking module.");
         }
 
+        // Shared mission framework (M5).
+        MissionService missionService = new MissionService(databaseManager,
+                new MissionRepository(), auditService, getLogger());
+        JobSessionService jobSessionService = new JobSessionService(databaseManager);
+        missionTracker = new MissionTracker(this, missionService, poiService);
+        missionTracker.start();
+        getServer().getPluginManager().registerEvents(new MissionListener(
+                databaseManager, missionService, jobSessionService), this);
+        // Deadline sweep every 30 seconds (live expiry; startup recovery below).
+        Bukkit.getScheduler().runTaskTimerAsynchronously(this, () -> {
+            if (databaseManager.ready()) {
+                missionService.expireOverdue("sweep");
+            }
+        }, 20L * 30, 20L * 30);
+
+        // Electrician module (M5).
+        try {
+            ElectricianConfig electricianConfig = ElectricianConfig.from(
+                    ModuleConfigs.load(this, "electrician").getConfigurationSection("electrician"));
+            if (electricianConfig.enabled()) {
+                ElectricianService electricianService = new ElectricianService(databaseManager,
+                        missionService, poiService, accountService, ledgerService,
+                        itemRepository, auditService, electricianConfig);
+                missionService.registerHandler("ELECTRICIAN_", electricianService);
+                Objects.requireNonNull(getCommand("elettricista")).setExecutor(
+                        new ElectricianCommands(databaseManager, electricianService, missionService,
+                                jobSessionService, accountService, itemService, guiManager, messages));
+                long dispatchTicks = 20L * 60 * electricianConfig.dispatchIntervalMinutes();
+                Bukkit.getScheduler().runTaskTimerAsynchronously(this, () -> {
+                    if (!databaseManager.ready()) {
+                        return;
+                    }
+                    electricianService.dispatchFailure().thenAccept(failed ->
+                            failed.ifPresent(poi -> databaseManager.db().onMain(() ->
+                                    Bukkit.getOnlinePlayers().stream()
+                                            .filter(p -> p.hasPermission("afterlife.electrician.worker"))
+                                            .forEach(p -> messages.send(p,
+                                                    "electrician.dispatch-broadcast",
+                                                    net.kyori.adventure.text.minimessage.tag.resolver
+                                                            .Placeholder.unparsed("name", poi.name()),
+                                                    net.kyori.adventure.text.minimessage.tag.resolver
+                                                            .Placeholder.unparsed("type", poi.type()))))));
+                }, dispatchTicks, dispatchTicks);
+            } else {
+                getLogger().info("Electrician module disabled in modules/electrician.yml");
+            }
+        } catch (ConfigValidationException e) {
+            e.errors().forEach(error -> getLogger().severe("Electrician config: " + error));
+            getLogger().severe("Electrician module disabled until modules/electrician.yml is fixed.");
+        }
+
+        // Delivery module (M5); requires banking for dirty-money payouts.
+        if (bankingService != null) {
+            try {
+                DeliveryConfig deliveryConfig = DeliveryConfig.from(
+                        ModuleConfigs.load(this, "delivery").getConfigurationSection("delivery"));
+                if (deliveryConfig.enabled()) {
+                    DeliveryService deliveryService = new DeliveryService(databaseManager,
+                            missionService, poiService, accountService, ledgerService,
+                            bankingService, itemRepository, auditService, deliveryConfig);
+                    missionService.registerHandler("FOOD_", deliveryService);
+                    missionService.registerHandler("CONTRABAND_", deliveryService);
+                    Objects.requireNonNull(getCommand("rider")).setExecutor(
+                            new DeliveryCommands(databaseManager, deliveryService, missionService,
+                                    jobSessionService, accountService, itemService, messages));
+                    getServer().getPluginManager().registerEvents(new DeliveryListener(
+                            databaseManager, missionService, itemService), this);
+                } else {
+                    getLogger().info("Delivery module disabled in modules/delivery.yml");
+                }
+            } catch (ConfigValidationException e) {
+                e.errors().forEach(error -> getLogger().severe("Delivery config: " + error));
+                getLogger().severe("Delivery module disabled until modules/delivery.yml is fixed.");
+            }
+        } else {
+            getLogger().info("Delivery module inactive: it requires the banking module.");
+        }
+
         AfterLifeCommand afterLifeCommand = new AfterLifeCommand(
                 this, databaseManager, integrationManager, poiService,
                 itemService, coreConfig, messages, reconciliationService,
@@ -275,6 +366,17 @@ public final class AfterLifeRPPlugin extends JavaPlugin {
                     getLogger().info("Loaded " + count + " POI(s) from the database");
                 }
             });
+            // Restart recovery (rule 13): expire overdue missions, close stale duty.
+            missionService.expireOverdue("startup").thenAccept(expired -> {
+                if (expired > 0) {
+                    getLogger().info("Startup recovery expired " + expired + " overdue mission(s)");
+                }
+            });
+            jobSessionService.closeStaleOnStartup().thenAccept(closed -> {
+                if (closed > 0) {
+                    getLogger().info("Startup recovery closed " + closed + " stale job session(s)");
+                }
+            });
             getLogger().info("AfterLifeRP " + getPluginMeta().getVersion()
                     + " ready — database connected, milestones 0-3 services active.");
         });
@@ -299,6 +401,9 @@ public final class AfterLifeRPPlugin extends JavaPlugin {
 
     @Override
     public void onDisable() {
+        if (missionTracker != null) {
+            missionTracker.stop();
+        }
         if (guiManager != null) {
             guiManager.closeAll();
         }

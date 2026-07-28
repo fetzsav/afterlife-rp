@@ -10,7 +10,7 @@ gate with a report (§18).
 | M2 — Economy & banking | ✅ done (2026-07-28) | Double-entry ledger, Vault bridge (ADR 0003), notes/dirty money/checks/cards, IBAN/ATM GUI, freeze, reconciliation, pending deliveries |
 | M3 — Civic, contracts, property | ✅ done (2026-07-28) | Licenses, Book&Quill contracts + lawyer validation, criminal records + expungement, detention + /ricorso, audited evidence custody, property sales/keys/locks, dirty rentals + black safe, power anomalies |
 | M4 — Vehicles, mechanic, used cars | ⏸ deferred | InfiniteVehicles chosen (ADR 0002); operator will schedule; plugin purchase + install needed |
-| M5 — Dispatch jobs | ⬜ | |
+| M5 — Dispatch jobs | ✅ done (2026-07-28) | Mission framework (one-winner rewards, restart/quit/AFK recovery), electrician (dispatch, wiring minigame, 1% circuit board), food delivery (temperature tips, sealed contraband) |
 | M6 — EMS | ⬜ | |
 | M7 — Nightclub | ⬜ | |
 | M8 — Police, crime, cross-module RP | ⬜ | ProtocolLib install needed |
@@ -62,3 +62,20 @@ gate with a report (§18).
   accumulation (not per-interaction weights); door/region enforcement of keys
   arrives with the door registry (§12); lawyer evidence access waits for the
   case system (M8 cross-module links).
+
+## M5 exit-gate evidence
+
+- MissionIT (Testcontainers): 12 concurrent completions of one mission → the
+  reward gate opens exactly once; one active mission per type per player;
+  startup recovery expires overdue missions (which can then never pay);
+  quit-cancel frees the player; stale job sessions close on startup.
+- Deliveries: package = serialized item bound to its mission serial; ended
+  missions void the serial so leftover items are inert; drop/container
+  stash/death drops are blocked; AFK warn/cancel via the mission tracker.
+- Electrician: POI failure claims are one-winner (FAILED→REPAIRING);
+  released/expired calls return to FAILED; circuit-board roll is a single
+  server-side SecureRandom draw at completion, audited discreetly.
+- Simplifications: delivery targets are POI proximity + command (NPC
+  right-click arrives with Citizens usage in M6+); company scooter stubbed
+  until M4 (InfiniteVehicles); uniform issuance deferred to the item-provider
+  milestone.

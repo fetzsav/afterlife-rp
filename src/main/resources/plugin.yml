@@ -91,6 +91,13 @@ commands:
   chiave:
     description: Check the key held in the main hand
     usage: /chiave
+  elettricista:
+    description: Electrician dispatch job
+    usage: /elettricista <turno|fine|chiamate|accetta <poi>|ripara>
+  rider:
+    description: Food delivery job
+    usage: /rider <turno|fine|ordine|ritira|consegna|accetta_pacco>
+    aliases: [job]
 permissions:
   afterlife.admin:
     description: Administrative diagnostics
@@ -121,4 +128,10 @@ permissions:
     default: op
   afterlife.realestate.director:
     description: Dirty properties and black safe
+    default: op
+  afterlife.electrician.worker:
+    description: Electrician missions
+    default: op
+  afterlife.delivery.driver:
+    description: Delivery shifts
     default: op

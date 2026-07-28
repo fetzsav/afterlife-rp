@@ -40,8 +40,39 @@ public final class PoiService {
         return Optional.ofNullable(byName.get(key(name)));
     }
 
+    public Optional<Poi> byId(UUID id) {
+        return byName.values().stream().filter(poi -> poi.id().equals(id)).findFirst();
+    }
+
     public Collection<Poi> all() {
         return List.copyOf(byName.values());
+    }
+
+    public List<Poi> byTypeAndStatus(Collection<String> types, String status) {
+        return byName.values().stream()
+                .filter(poi -> types.contains(poi.type()) && poi.status().equals(status))
+                .toList();
+    }
+
+    /** One-winner POI status transition (e.g. ACTIVE -> FAILED -> REPAIRING). */
+    public CompletableFuture<Boolean> updateStatus(UUID poiId, String from, String to) {
+        return databaseManager.db().<Boolean>inTransaction(connection -> {
+            try (var statement = connection.prepareStatement(
+                    "UPDATE points_of_interest SET status = ?, version = version + 1 "
+                            + "WHERE id = ? AND status = ?")) {
+                statement.setString(1, to);
+                statement.setString(2, poiId.toString());
+                statement.setString(3, from);
+                return statement.executeUpdate() == 1;
+            }
+        }).thenApply(changed -> {
+            if (changed) {
+                byId(poiId).ifPresent(poi -> byName.put(key(poi.name()), new Poi(
+                        poi.id(), poi.name(), poi.type(), poi.world(), poi.x(), poi.y(), poi.z(),
+                        poi.yaw(), poi.pitch(), poi.regionId(), to, poi.createdBy())));
+            }
+            return changed;
+        });
     }
 
     public CompletableFuture<Poi> create(

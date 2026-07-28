@@ -1,0 +1,23 @@
+# Food delivery module (Milestone 5, §9.6).
+delivery:
+  enabled: true
+  package-timeout-minutes: 10
+  afk-warning-seconds: 45
+  afk-cancel-seconds: 90
+  base-pay-euro: 12
+  distance-cents-per-block: 4
+  poi-types:
+    restaurants: [RESTAURANT]
+    destinations: [DELIVERY_DESTINATION]
+    shadow-drops: [SHADOW_DROP]
+  temperature:
+    base: 100
+    cooling-rate-per-second: 0.12
+    base-tip-euro: 10
+    route-multiplier-per-100-blocks: 0.25   # tip x (1 + blocks/100 x this)
+  contraband:
+    offer-chance: 0.15
+    offer-window-seconds: 60
+    pay-euro-min: 80
+    pay-euro-max: 160
+    deadline-minutes: 8
