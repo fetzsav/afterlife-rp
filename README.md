@@ -25,16 +25,17 @@ On first boot the plugin generates `plugins/AfterLifeRP/config.yml` (set the
 database credentials there) and `plugins/AfterLifeRP/secret.key` (HMAC key —
 never commit either; rule 12).
 
-## Commands (Milestone 0+1)
+## Commands (by module)
 
-| Command | Permission | Purpose |
-|---|---|---|
-| `/afterlife version` | `afterlife.admin` | Plugin + server version |
-| `/afterlife health` | `afterlife.admin` | Database and adapter status |
-| `/afterlife setup poi …` | `afterlife.admin.setup` | Create/remove/list POIs, setup report |
-| `/afterlife debug item <type> [denom]` | `afterlife.admin` | Issue a test serialized item |
-| `/id` (alias `/identita`) | — | Show permanent public ID |
-| `/setnick <text\|reset\|off>` | `afterlife.vip.nickname` | VIP nickname |
+| Area | Commands |
+|---|---|
+| Core | `/afterlife <version\|health\|reconcile\|setup poi/org/license/property\|debug>`, `/id`, `/setnick` |
+| Banking | `/iban`, `/atm` (`/banca`), `/bonifico`, `/assegno`, `/incassa`, `/banchiere`, `/sequestro` |
+| Legal | `/contratto`, `/valida_contratto`, `/fedina`, `/pulisci_fedina`, `/arresto`, `/rilascio`, `/avvocato`, `/ricorso`, `/prova`, `/licenza` |
+| Real estate | `/luoghidisponibili`, `/luoghisporchi`, `/agenzia`, `/cambia_serratura`, `/cassaforte`, `/chiave` |
+| Jobs | `/elettricista`, `/rider` (`/job`), `/ems` (`/medico`) |
+
+Permissions follow `afterlife.<module>.<action>` (see `plugin.yml`).
 
 ## Milestones
 

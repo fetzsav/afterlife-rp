@@ -11,7 +11,7 @@ gate with a report (§18).
 | M3 — Civic, contracts, property | ✅ done (2026-07-28) | Licenses, Book&Quill contracts + lawyer validation, criminal records + expungement, detention + /ricorso, audited evidence custody, property sales/keys/locks, dirty rentals + black safe, power anomalies |
 | M4 — Vehicles, mechanic, used cars | ⏸ deferred | InfiniteVehicles chosen (ADR 0002); operator will schedule; plugin purchase + install needed |
 | M5 — Dispatch jobs | ✅ done (2026-07-28) | Mission framework (one-winner rewards, restart/quit/AFK recovery), electrician (dispatch, wiring minigame, 1% circuit board), food delivery (temperature tips, sealed contraband) |
-| M6 — EMS | ⬜ | |
+| M6 — EMS | ✅ done (2026-07-28) | Injury engine, tool-sequence treatments + hospital billing, traceable batches, certificates, Citizens NPC emergencies, toxic extraction → illegal Adrenaline |
 | M7 — Nightclub | ⬜ | |
 | M8 — Police, crime, cross-module RP | ⬜ | ProtocolLib install needed |
 | M9 — Balance, content, launch | ⬜ | Item provider decision required first (ADR 0002) |
@@ -79,3 +79,20 @@ gate with a report (§18).
   right-click arrives with Citizens usage in M6+); company scooter stubbed
   until M4 (InfiniteVehicles); uniform issuance deferred to the item-provider
   milestone.
+
+## M6 exit-gate evidence
+
+- EmsIT (Testcontainers): treatment enforces the exact tool sequence (wrong
+  tool rejected with the correct expected tool); concurrent medics cannot both
+  advance the same step (one-winner conditional update); healing bills the
+  patient with hospital/commission split in the same transaction; batches
+  trace to their producer with LEGAL/ILLEGAL flags (chemical → illegal
+  Adrenaline); a cancelled extraction can never produce a chemical;
+  certificates require zero open injuries.
+- NPC emergencies: Citizens NPCs are bound to their mission and destroyed on
+  completion, expiry, cancellation, plugin disable, and startup sweep
+  ([EMS] name marker).
+- Simplifications: ambulance transport waits for M4 vehicles; incapacitation
+  is the UNCONSCIOUS injury (defibrillator) rather than a full no-death mode;
+  medical tools are issued via /afterlife debug item until the item-provider
+  milestone adds crafting recipes.

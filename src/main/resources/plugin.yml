@@ -98,6 +98,10 @@ commands:
     description: Food delivery job
     usage: /rider <turno|fine|ordine|ritira|consegna|accetta_pacco>
     aliases: [job]
+  ems:
+    description: EMS medic job
+    usage: /ems <turno|scan|cura|produci|traccia|certificato|manuale|...>
+    aliases: [medico]
 permissions:
   afterlife.admin:
     description: Administrative diagnostics
@@ -134,4 +138,7 @@ permissions:
     default: op
   afterlife.delivery.driver:
     description: Delivery shifts
+    default: op
+  afterlife.ems.medic:
+    description: Diagnosis, treatment, certificates
     default: op

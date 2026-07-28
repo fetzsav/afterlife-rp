@@ -108,13 +108,18 @@ public final class AccountService {
         }
     }
 
-    /** Loads the three system clearing accounts once at startup. */
+    /** Loads EVERY system account (any module may seed its own via migration). */
     public CompletableFuture<Void> loadSystemAccounts() {
         return databaseManager.db().<Void>supply(connection -> {
-            for (String code : new String[] {SYSTEM_CASH_ISSUANCE, SYSTEM_SEIZURE,
-                    SYSTEM_GOVERNMENT, SYSTEM_CHECK_CLEARING}) {
-                repository.findByCode(connection, code)
-                        .ifPresent(account -> systemByCode.put(code, account));
+            try (PreparedStatement statement = connection.prepareStatement(
+                    "SELECT code FROM accounts WHERE owner_type = 'SYSTEM' AND code IS NOT NULL")) {
+                try (var rs = statement.executeQuery()) {
+                    while (rs.next()) {
+                        String code = rs.getString(1);
+                        repository.findByCode(connection, code)
+                                .ifPresent(account -> systemByCode.put(code, account));
+                    }
+                }
             }
             return null;
         });
@@ -190,6 +195,18 @@ public final class AccountService {
     private void cache(UUID playerUuid, Account account) {
         personalByPlayer.put(playerUuid, account);
         balanceByAccount.put(account.id(), account.balance());
+    }
+
+    /** Composed flows bypass the ledger listener; re-read the touched balances. */
+    public CompletableFuture<Void> refreshBalances(UUID... accountIds) {
+        return databaseManager.db().supply(connection -> {
+            Map<UUID, Long> balances = new java.util.HashMap<>();
+            for (UUID id : accountIds) {
+                repository.findById(connection, id)
+                        .ifPresent(account -> balances.put(id, account.balance()));
+            }
+            return balances;
+        }).thenAccept(this::onLedgerCommit);
     }
 
     private void refreshCachedAccount(UUID accountId) {

@@ -24,6 +24,11 @@ import com.afterlife.rp.module.delivery.DeliveryService;
 import com.afterlife.rp.module.electrician.ElectricianCommands;
 import com.afterlife.rp.module.electrician.ElectricianConfig;
 import com.afterlife.rp.module.electrician.ElectricianService;
+import com.afterlife.rp.module.ems.EmsCommands;
+import com.afterlife.rp.module.ems.EmsConfig;
+import com.afterlife.rp.module.ems.EmsListener;
+import com.afterlife.rp.module.ems.EmsRuntime;
+import com.afterlife.rp.module.ems.EmsService;
 import com.afterlife.rp.module.legal.LegalCommands;
 import com.afterlife.rp.module.legal.LegalConfig;
 import com.afterlife.rp.module.legal.LegalService;
@@ -55,6 +60,7 @@ import com.afterlife.rp.shared.regions.PoiService;
 import java.time.Duration;
 import java.util.List;
 import java.util.Objects;
+import java.util.UUID;
 import java.util.logging.Level;
 import org.bukkit.Bukkit;
 import org.bukkit.command.PluginCommand;
@@ -68,6 +74,7 @@ public final class AfterLifeRPPlugin extends JavaPlugin {
     private NametagService nametagService;
     private IdentityService identityService;
     private MissionTracker missionTracker;
+    private EmsRuntime emsRuntime;
 
     @Override
     public void onEnable() {
@@ -326,6 +333,57 @@ public final class AfterLifeRPPlugin extends JavaPlugin {
             getLogger().info("Delivery module inactive: it requires the banking module.");
         }
 
+        // EMS module (M6).
+        try {
+            EmsConfig emsConfig = EmsConfig.from(
+                    ModuleConfigs.load(this, "ems").getConfigurationSection("ems"));
+            if (emsConfig.enabled()) {
+                EmsService emsService = new EmsService(databaseManager, missionService,
+                        accountService, ledgerService, itemRepository, auditService, emsConfig);
+                emsRuntime = new EmsRuntime(this, databaseManager, emsService, missionService,
+                        poiService, jobSessionService, accountService, ledgerService,
+                        itemService, messages);
+                EmsListener emsListener = new EmsListener(this, databaseManager, emsService,
+                        messages);
+                getServer().getPluginManager().registerEvents(emsListener, this);
+                // Emergencies clean their NPC on any end state; extraction tasks
+                // self-cancel when the mission leaves the cache.
+                EmsRuntime runtimeRef = emsRuntime;
+                missionService.registerHandler("EMS_", (mission, endState) -> {
+                    if (EmsService.MISSION_EMERGENCY.equals(mission.type())) {
+                        runtimeRef.cleanupEmergency(mission);
+                    }
+                });
+                Objects.requireNonNull(getCommand("ems")).setExecutor(new EmsCommands(
+                        databaseManager, emsService, emsRuntime, emsListener, jobSessionService,
+                        accountService, itemService, poiService, messages));
+                emsRuntime.start();
+                // Hourly wage for on-duty medics from the government budget (§9.8).
+                Bukkit.getScheduler().runTaskTimer(this, () -> {
+                    if (!databaseManager.ready()) {
+                        return;
+                    }
+                    UUID government = accountService.system(AccountService.SYSTEM_GOVERNMENT).id();
+                    Bukkit.getOnlinePlayers().stream()
+                            .filter(p -> jobSessionService.isOnDuty(p.getUniqueId(), EmsService.JOB))
+                            .forEach(p -> accountService.cachedPersonal(p.getUniqueId())
+                                    .ifPresent(account -> ledgerService.execute(
+                                            "wage-" + UUID.randomUUID(), "EMS_WAGE",
+                                            p.getUniqueId(), null,
+                                            List.of(new LedgerService.Line(government,
+                                                            -emsConfig.wageHourlyCents()),
+                                                    new LedgerService.Line(account.id(),
+                                                            emsConfig.wageHourlyCents())),
+                                            false)));
+                }, 20L * 3600, 20L * 3600);
+            } else {
+                getLogger().info("EMS module disabled in modules/ems.yml");
+            }
+        } catch (ConfigValidationException e) {
+            e.errors().forEach(error -> getLogger().severe("EMS config: " + error));
+            getLogger().severe("EMS module disabled until modules/ems.yml is fixed.");
+        }
+
         AfterLifeCommand afterLifeCommand = new AfterLifeCommand(
                 this, databaseManager, integrationManager, poiService,
                 itemService, coreConfig, messages, reconciliationService,
@@ -401,6 +459,9 @@ public final class AfterLifeRPPlugin extends JavaPlugin {
 
     @Override
     public void onDisable() {
+        if (emsRuntime != null) {
+            emsRuntime.stop();
+        }
         if (missionTracker != null) {
             missionTracker.stop();
         }

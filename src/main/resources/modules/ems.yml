@@ -1,0 +1,57 @@
+# EMS module (Milestone 6, §9.8).
+ems:
+  enabled: true
+  # Chance that a damage cause inflicts an injury (rolled once per hit above
+  # the damage threshold). Injury types: BLEEDING, CUT, FRACTURE, LEG_PAIN,
+  # PROJECTILE, UNCONSCIOUS.
+  injury:
+    minimum-damage: 4.0
+    apply-effects: true
+    unconscious-health-threshold: 6.0
+    unconscious-chance: 0.35
+    causes:
+      FALL: { chance: 0.35, types: [FRACTURE, LEG_PAIN] }
+      PROJECTILE: { chance: 0.45, types: [PROJECTILE, BLEEDING] }
+      ENTITY_ATTACK: { chance: 0.30, types: [CUT, BLEEDING] }
+      ENTITY_SWEEP_ATTACK: { chance: 0.20, types: [CUT] }
+      FALLING_BLOCK: { chance: 0.30, types: [FRACTURE] }
+  # Ordered tool sequence per injury type (rule: exact sequence required).
+  treatment:
+    price-euro-per-step: 15
+    medic-commission-percent: 10
+    sequences:
+      BLEEDING: [forceps, bandage]
+      CUT: [bandage]
+      FRACTURE: [splint, bandage]
+      LEG_PAIN: [medkit]
+      PROJECTILE: [forceps, bandage]
+      UNCONSCIOUS: [defibrillator]
+    # Single-use medicines consumed by a treatment step.
+    consumables: [bandage, splint, medkit, adrenaline]
+  production:
+    workstation-poi-types: [HOSPITAL_WORKSTATION]
+    # High reagent costs, low margins (§9.8 hospital economy).
+    reagent-cost-euro:
+      bandage: 8
+      splint: 12
+      medkit: 30
+      adrenaline: 60
+  wage:
+    hourly-euro: 35
+  certificate:
+    price-euro: 100
+    expiry-days: 14
+  emergency:
+    interval-minutes-min: 30
+    interval-minutes-max: 40
+    min-medics-on-duty: 1
+    poi-types: [EMERGENCY_POINT]
+    reward-euro: 60
+    deadline-minutes: 15
+    treatment-steps: 3
+  toxic:
+    barrel-poi-types: [TOXIC_BARREL]
+    duration-seconds-min: 45
+    duration-seconds-max: 60
+    radius-blocks: 3
+    workstation-poi-types: [HOSPITAL_WORKSTATION]
