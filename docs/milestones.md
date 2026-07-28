@@ -26,3 +26,6 @@ gate with a report (§18).
 - Missing integrations are reported by `/afterlife health` and boot logs.
 - Installed on the server: LuckPerms 5.5.53, WorldEdit 7.4.4, WorldGuard 7.0.17,
   PlaceholderAPI 2.12.3, VaultUnlocked 2.20.2, Citizens 2.0.43-b4228.
+- Live boot verified on Paper 26.2 (2026-07-28 20:55): runtime libraries
+  resolved, HMAC secret generated, all 5 integrations active, Flyway migrated
+  to schema v1, database connected, POIs loaded. Confirmed by the operator.
