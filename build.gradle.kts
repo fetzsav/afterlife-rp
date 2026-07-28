@@ -19,6 +19,7 @@ repositories {
     maven("https://repo.extendedclip.com/releases/")
     maven("https://jitpack.io")
     maven("https://maven.citizensnpcs.co/repo")
+    maven("https://repo.momirealms.net/releases/")
 }
 
 // Runtime libraries are resolved by the server through plugin.yml `libraries:`;
@@ -39,6 +40,8 @@ dependencies {
     compileOnly("me.clip:placeholderapi:2.12.3")
     compileOnly("com.github.MilkBowl:VaultAPI:1.7.1") { isTransitive = false }
     compileOnly("net.citizensnpcs:citizens-main:2.0.43-SNAPSHOT") { isTransitive = false }
+    compileOnly("net.momirealms:craft-engine-core:26.7.4") { isTransitive = false }
+    compileOnly("net.momirealms:craft-engine-bukkit:26.7.4") { isTransitive = false }
 
     compileOnly("com.zaxxer:HikariCP:$hikariVersion")
     compileOnly("org.flywaydb:flyway-core:$flywayVersion")

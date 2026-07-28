@@ -20,6 +20,23 @@ identity:
 gui:
   session-timeout-seconds: 120
 
+# Optional CraftEngine custom-model mapping: afterlife item type -> CraftEngine
+# namespaced id. Any type left unmapped (or when CraftEngine is absent) keeps
+# its vanilla-material look. Create the matching items in a CraftEngine pack.
+custom-items:
+  banknote: "afterlife:banknote"
+  dirty_money: "afterlife:dirty_money"
+  credit_card: "afterlife:credit_card"
+  check: "afterlife:check"
+  property_key: "afterlife:property_key"
+  contract: "afterlife:contract"
+  drug_dose: "afterlife:drug_dose"
+  sealed_bag: "afterlife:sealed_bag"
+  atm_hacking_device: "afterlife:atm_hacking_device"
+  circuit_board: "afterlife:circuit_board"
+  medical_certificate: "afterlife:medical_certificate"
+  receipt: "afterlife:receipt"
+
 poi:
   # Allowed POI types for /afterlife setup poi create. Extend as modules arrive.
   types:

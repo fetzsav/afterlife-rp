@@ -1,0 +1,60 @@
+# AfterLifeRP starter CraftEngine item pack.
+#
+# Drop this into plugins/CraftEngine/resources/afterlife/configuration/ and add
+# your own model + texture assets, then /craftengine reload. Each id here
+# matches config.yml `custom-items:`. These defaults reuse vanilla item models
+# (no custom textures yet) so the pack loads immediately; replace `model:` with
+# your resource-pack model paths when the art is ready.
+#
+# Identity still comes from AfterLifeRP's PDC + HMAC — CraftEngine only provides
+# the visual base stack (see docs/item-catalog.md).
+
+items:
+  afterlife:banknote:
+    material: paper
+    data:
+      item-name: "<green>Banconota</green>"
+  afterlife:dirty_money:
+    material: paper
+    data:
+      item-name: "<dark_red>Denaro sporco</dark_red>"
+  afterlife:credit_card:
+    material: name_tag
+    data:
+      item-name: "<aqua>Carta di credito</aqua>"
+  afterlife:check:
+    material: paper
+    data:
+      item-name: "<gold>Assegno</gold>"
+  afterlife:receipt:
+    material: paper
+    data:
+      item-name: "<white>Scontrino</white>"
+  afterlife:contract:
+    material: paper
+    data:
+      item-name: "<yellow>Contratto</yellow>"
+  afterlife:property_key:
+    material: tripwire_hook
+    data:
+      item-name: "<yellow>Chiave</yellow>"
+  afterlife:medical_certificate:
+    material: paper
+    data:
+      item-name: "<green>Certificato medico</green>"
+  afterlife:circuit_board:
+    material: repeater
+    data:
+      item-name: "<gold>Scheda a circuito intatta</gold>"
+  afterlife:drug_dose:
+    material: sugar
+    data:
+      item-name: "<light_purple>Dose</light_purple>"
+  afterlife:sealed_bag:
+    material: paper
+    data:
+      item-name: "<gray>Sacchetto sigillato</gray>"
+  afterlife:atm_hacking_device:
+    material: comparator
+    data:
+      item-name: "<dark_red>Dispositivo di hacking ATM</dark_red>"

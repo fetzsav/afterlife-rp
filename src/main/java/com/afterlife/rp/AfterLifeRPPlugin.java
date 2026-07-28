@@ -181,6 +181,10 @@ public final class AfterLifeRPPlugin extends JavaPlugin {
 
         IntegrationManager integrationManager = new IntegrationManager();
         integrationManager.detect(this, identityService, getLogger());
+        // Route serialized-item presentation through the custom-model provider
+        // (CraftEngine) when available; unmapped types keep vanilla materials.
+        itemService.useCustomItems(integrationManager.customItems(),
+                coreConfig.customItemCatalog());
 
         getServer().getPluginManager().registerEvents(new IdentityListener(
                 databaseManager, identityService, nametagService,

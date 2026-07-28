@@ -55,7 +55,12 @@ core down. Prices, cooldowns, chances, and POI types are all configurable there.
 
 ## Dependency plugins (installed, MC 26.2)
 
-LuckPerms, WorldEdit + WorldGuard, PlaceholderAPI, VaultUnlocked, Citizens.
-ProtocolLib is **not** required — hallucinations use Paper's hideEntity
-(ADR 0004). InfiniteVehicles is the chosen vehicle plugin for the deferred
-Milestone 4 (ADR 0002).
+LuckPerms, WorldEdit + WorldGuard, PlaceholderAPI, VaultUnlocked, Citizens,
+ProtocolLib, and **CraftEngine** (custom-item provider — ADR 0002; ItemsAdder
+was rejected as incompatible with Paper 26.2). ProtocolLib is installed and
+also re-enables the packet-only visuals path. InfiniteVehicles is the chosen
+vehicle plugin for the deferred Milestone 4.
+
+Custom item models are mapped in `config.yml` `custom-items:` (afterlife type →
+CraftEngine id); author the pack from `docs/craftengine/afterlife-items.yml`
+(see `docs/item-catalog.md`). Unmapped types keep vanilla materials.

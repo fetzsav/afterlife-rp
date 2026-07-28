@@ -1,10 +1,13 @@
 package com.afterlife.rp.config;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 
 /** Validated core configuration (non-database sections of config.yml). */
@@ -12,7 +15,8 @@ public record CoreConfig(
         int nicknameMinLength,
         int nicknameMaxLength,
         int guiSessionTimeoutSeconds,
-        Set<String> poiTypes) {
+        Set<String> poiTypes,
+        Map<String, String> customItemCatalog) {
 
     public static CoreConfig from(FileConfiguration config) {
         int min = config.getInt("identity.nickname.min-length", 1);
@@ -21,6 +25,16 @@ public record CoreConfig(
         Set<String> poiTypes = new TreeSet<>();
         for (String type : config.getStringList("poi.types")) {
             poiTypes.add(type.toUpperCase(Locale.ROOT));
+        }
+        Map<String, String> catalog = new HashMap<>();
+        ConfigurationSection customItems = config.getConfigurationSection("custom-items");
+        if (customItems != null) {
+            for (String type : customItems.getKeys(false)) {
+                String id = customItems.getString(type);
+                if (id != null && !id.isBlank()) {
+                    catalog.put(type.toLowerCase(Locale.ROOT), id);
+                }
+            }
         }
 
         List<String> errors = new ArrayList<>();
@@ -39,6 +53,6 @@ public record CoreConfig(
         if (!errors.isEmpty()) {
             throw new ConfigValidationException(errors);
         }
-        return new CoreConfig(min, max, guiTimeout, Set.copyOf(poiTypes));
+        return new CoreConfig(min, max, guiTimeout, Set.copyOf(poiTypes), Map.copyOf(catalog));
     }
 }

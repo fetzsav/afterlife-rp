@@ -30,11 +30,23 @@ public final class SerializedItemService {
     private final SerializedItemRepository repository;
     private final HmacSigner signer;
 
+    // Optional custom-model provider (CraftEngine). Set after integration
+    // detection; until then every item uses its vanilla-material fallback.
+    private volatile com.afterlife.rp.integration.CustomItemAdapter customItems;
+    private volatile java.util.Map<String, String> catalog = java.util.Map.of();
+
     public SerializedItemService(
             DatabaseManager databaseManager, SerializedItemRepository repository, HmacSigner signer) {
         this.databaseManager = databaseManager;
         this.repository = repository;
         this.signer = signer;
+    }
+
+    /** Wires a custom-item provider and its type→catalog-id mapping (§2.1). */
+    public void useCustomItems(com.afterlife.rp.integration.CustomItemAdapter adapter,
+            java.util.Map<String, String> typeToCatalogId) {
+        this.customItems = adapter;
+        this.catalog = java.util.Map.copyOf(typeToCatalogId);
     }
 
     /**
@@ -113,9 +125,15 @@ public final class SerializedItemService {
         return databaseManager.db().inTransaction(connection -> repository.transition(connection, serial, from, to));
     }
 
-    /** Builds the stamped single-item stack for an already-persisted record. */
+    /**
+     * Builds the stamped single-item stack for an already-persisted record.
+     * When a custom model is mapped for the item type and the provider is
+     * available, that model is the base stack; otherwise the vanilla material
+     * is used. Either way the authoritative PDC + HMAC is stamped on top.
+     */
     public ItemStack toItemStack(SerializedItem record, Material material, Component displayName) {
-        ItemStack stack = new ItemStack(material, 1);
+        ItemStack stack = customModel(record.itemType(), displayName)
+                .orElseGet(() -> new ItemStack(material, 1));
         ItemMeta meta = stack.getItemMeta();
         meta.displayName(displayName);
         PersistentDataContainer pdc = meta.getPersistentDataContainer();
@@ -128,5 +146,15 @@ public final class SerializedItemService {
                 record.serial().toString(), record.itemType(), denominationValue, record.issuedAtEpochMs()));
         stack.setItemMeta(meta);
         return stack;
+    }
+
+    private java.util.Optional<ItemStack> customModel(String itemType, Component displayName) {
+        com.afterlife.rp.integration.CustomItemAdapter adapter = customItems;
+        if (adapter == null || !adapter.available()) {
+            return java.util.Optional.empty();
+        }
+        String catalogId = catalog.get(itemType);
+        return catalogId == null ? java.util.Optional.empty()
+                : adapter.render(catalogId, displayName, 1);
     }
 }
