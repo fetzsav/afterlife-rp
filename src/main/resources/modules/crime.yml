@@ -1,0 +1,26 @@
+# Crime module (Milestone 8, §9.4).
+crime:
+  enabled: true
+  gang:
+    sale-zone-poi-types: [STREET_SALE_ZONE]
+    # NPC demand appears on this interval in an active zone.
+    demand-interval-seconds: 90
+    # NPC pays dirty money below cartel wholesale; suspicion chance per sale.
+    payout-euro-min: 40
+    payout-euro-max: 80
+    suspicion-chance: 0.25
+  drug:
+    good-trip-chance: 0.70
+    trip-seconds: 20
+    hallucination-cap: 4
+    consume-cooldown-seconds: 45
+    # Good-trip friendly mobs, bad-trip scary mobs (packet-free, consumer-only).
+    good-mobs: [ALLAY, CAT, BEE]
+    bad-mobs: [ZOMBIE, SPIDER, PHANTOM]
+  atm-hack:
+    poi-types: [ATM]
+    channel-seconds: 20
+    reward-euro-min: 200
+    reward-euro-max: 600
+    # Alert police on start/failure with an approximate district.
+    alert: true

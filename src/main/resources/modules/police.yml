@@ -1,0 +1,18 @@
+# Police module (Milestone 8, §9.3).
+police:
+  enabled: true
+  warrant:
+    default-duration-minutes: 30
+  search:
+    range-blocks: 4
+  k9:
+    # On-duty deployed K-9 units scan at this interval within the radius.
+    scan-interval-seconds: 6
+    radius-blocks: 5
+    # PDC item types the K-9 flags as contraband.
+    contraband-item-types: [contraband_package, drug_dose, dirty_money]
+    # Items whose PDC marks them odor-proof defeat an ordinary scan.
+    odorproof-item-types: [sealed_bag]
+  account-check:
+    # /controlloconto shows only balance band + frozen state, never exact funds.
+    bands-euro: [1000, 10000, 100000]

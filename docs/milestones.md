@@ -13,7 +13,7 @@ gate with a report (§18).
 | M5 — Dispatch jobs | ✅ done (2026-07-28) | Mission framework (one-winner rewards, restart/quit/AFK recovery), electrician (dispatch, wiring minigame, 1% circuit board), food delivery (temperature tips, sealed contraband) |
 | M6 — EMS | ✅ done (2026-07-28) | Injury engine, tool-sequence treatments + hospital billing, traceable batches, certificates, Citizens NPC emergencies, toxic extraction → illegal Adrenaline |
 | M7 — Nightclub | ✅ done (2026-07-28) | POS + receipts + stock, shaker quality minigame, VIP/bouncer/blacklist, DJ effects, criminal escrow, anonymous bounties, manager dashboard |
-| M8 — Police, crime, cross-module RP | ⬜ | ProtocolLib install needed |
+| M8 — Police, crime, cross-module RP | ✅ done (2026-07-28) | Warrants, authorized searches, seizures→evidence, K-9, scoped account checks, alerts; gang sales, drug trips (hideEntity, no ProtocolLib — ADR 0004), sealing, ATM hacking from M5 circuit board |
 | M9 — Balance, content, launch | ⬜ | Item provider decision required first (ADR 0002) |
 
 ## M0/M1 exit-gate evidence
@@ -115,3 +115,26 @@ gate with a report (§18).
   content milestone); track selection for the DJ is lighting/smoke only until
   a music integration is chosen; escrow accepts serialized items only (plain
   vanilla stacks cannot be made duplication-safe).
+
+## M8 exit-gate evidence
+
+- PoliceCrimeIT (Testcontainers): searches require consent/warrant/exigent —
+  a search without authority is DENIED and audited (authorizations audited
+  too); a warrant authorizes until it expires by the DB clock; seizures enter
+  the evidence chain and set the item CONFISCATED; a drug dose sells exactly
+  once under 6 concurrent attempts; sealing voids the dose and yields an
+  odor-proof bag (K-9 classification: drug_dose contraband, sealed_bag
+  odor-proof); the ATM-hack device builds from an Intact Circuit Board
+  (consumed once), the device is consumed at hack start (replay fails), and
+  the hack pays exactly once; account checks are audited and banded (never
+  exact). Plus a unit test on the band boundaries.
+- Hallucinations use Paper hideEntity/showEntity (ADR 0004) — real entities
+  visible only to the consumer, invulnerable, no-AI, capped, cleaned up on
+  trip end/quit/disable. No ProtocolLib dependency.
+- Cross-module links realized: seizure reuses the M3 evidence chain; ATM
+  hacking consumes the M5 electrician circuit board; gang sales and hacks pay
+  the M2 physical dirty money.
+- Simplifications: gang street demand is a proximity broadcast + /gang vendi
+  (Citizens buyer NPCs can replace it later); warrant/arrest tie-in to the M3
+  detention flow is left to the case system; virtual-sign input still needs
+  ProtocolLib if that feature is ever added.

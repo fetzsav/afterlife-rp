@@ -32,10 +32,19 @@ import com.afterlife.rp.module.ems.EmsService;
 import com.afterlife.rp.module.legal.LegalCommands;
 import com.afterlife.rp.module.legal.LegalConfig;
 import com.afterlife.rp.module.legal.LegalService;
+import com.afterlife.rp.module.crime.CrimeCommands;
+import com.afterlife.rp.module.crime.CrimeConfig;
+import com.afterlife.rp.module.crime.CrimeListener;
+import com.afterlife.rp.module.crime.CrimeRuntime;
+import com.afterlife.rp.module.crime.CrimeService;
 import com.afterlife.rp.module.nightclub.NightclubCommands;
 import com.afterlife.rp.module.nightclub.NightclubConfig;
 import com.afterlife.rp.module.nightclub.NightclubListener;
 import com.afterlife.rp.module.nightclub.NightclubService;
+import com.afterlife.rp.module.police.K9Runtime;
+import com.afterlife.rp.module.police.PoliceCommands;
+import com.afterlife.rp.module.police.PoliceConfig;
+import com.afterlife.rp.module.police.PoliceService;
 import com.afterlife.rp.shared.missions.JobSessionService;
 import com.afterlife.rp.shared.missions.MissionListener;
 import com.afterlife.rp.shared.missions.MissionRepository;
@@ -79,6 +88,8 @@ public final class AfterLifeRPPlugin extends JavaPlugin {
     private IdentityService identityService;
     private MissionTracker missionTracker;
     private EmsRuntime emsRuntime;
+    private K9Runtime k9Runtime;
+    private CrimeRuntime crimeRuntime;
 
     @Override
     public void onEnable() {
@@ -422,6 +433,65 @@ public final class AfterLifeRPPlugin extends JavaPlugin {
             getLogger().severe("EMS module disabled until modules/ems.yml is fixed.");
         }
 
+        // Police module (M8); needs the legal module for the evidence chain.
+        PoliceService policeService = null;
+        if (legalService != null) {
+            try {
+                PoliceConfig policeConfig = PoliceConfig.from(
+                        ModuleConfigs.load(this, "police").getConfigurationSection("police"));
+                if (policeConfig.enabled()) {
+                    policeService = new PoliceService(databaseManager, accountService,
+                            legalService, auditService, policeConfig);
+                    k9Runtime = new K9Runtime(this, policeConfig, jobSessionService, itemService,
+                            messages);
+                    k9Runtime.start();
+                    Objects.requireNonNull(getCommand("polizia")).setExecutor(new PoliceCommands(
+                            databaseManager, policeService, k9Runtime, jobSessionService,
+                            itemService, messages));
+                    var policeCommands = getCommand("polizia").getExecutor();
+                    Objects.requireNonNull(getCommand("k9")).setExecutor(policeCommands);
+                    Objects.requireNonNull(getCommand("acconsenti")).setExecutor(policeCommands);
+                } else {
+                    getLogger().info("Police module disabled in modules/police.yml");
+                }
+            } catch (ConfigValidationException e) {
+                e.errors().forEach(error -> getLogger().severe("Police config: " + error));
+                getLogger().severe("Police module disabled until modules/police.yml is fixed.");
+            }
+        } else {
+            getLogger().info("Police module inactive: it requires the legal module.");
+        }
+
+        // Crime module (M8); needs banking (dirty money) and police (alerts).
+        if (bankingService != null && policeService != null) {
+            try {
+                CrimeConfig crimeConfig = CrimeConfig.from(
+                        ModuleConfigs.load(this, "crime").getConfigurationSection("crime"));
+                if (crimeConfig.enabled()) {
+                    CrimeService crimeService = new CrimeService(databaseManager, missionService,
+                            bankingService, itemRepository, auditService, crimeConfig);
+                    crimeRuntime = new CrimeRuntime(this, databaseManager, crimeConfig, crimeService,
+                            policeService, missionService, poiService, jobSessionService,
+                            itemService, messages);
+                    missionService.registerHandler("ATM_HACK", crimeService);
+                    getServer().getPluginManager().registerEvents(new CrimeListener(
+                            this, databaseManager, crimeService, crimeRuntime, itemService,
+                            messages), this);
+                    Objects.requireNonNull(getCommand("gang")).setExecutor(new CrimeCommands(
+                            databaseManager, crimeService, crimeRuntime, policeService,
+                            jobSessionService, itemService, poiService, messages));
+                    crimeRuntime.start();
+                } else {
+                    getLogger().info("Crime module disabled in modules/crime.yml");
+                }
+            } catch (ConfigValidationException e) {
+                e.errors().forEach(error -> getLogger().severe("Crime config: " + error));
+                getLogger().severe("Crime module disabled until modules/crime.yml is fixed.");
+            }
+        } else {
+            getLogger().info("Crime module inactive: it requires the banking and police modules.");
+        }
+
         AfterLifeCommand afterLifeCommand = new AfterLifeCommand(
                 this, databaseManager, integrationManager, poiService,
                 itemService, coreConfig, messages, reconciliationService,
@@ -502,6 +572,12 @@ public final class AfterLifeRPPlugin extends JavaPlugin {
 
     @Override
     public void onDisable() {
+        if (crimeRuntime != null) {
+            crimeRuntime.stop();
+        }
+        if (k9Runtime != null) {
+            k9Runtime.stop();
+        }
         if (emsRuntime != null) {
             emsRuntime.stop();
         }
