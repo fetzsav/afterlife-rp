@@ -1,0 +1,33 @@
+name: AfterLifeRP
+version: '${version}'
+main: com.afterlife.rp.AfterLifeRPPlugin
+api-version: '26.2'
+authors: [AfterLife]
+description: Modular city-roleplay core plugin (identity, ledger, items, missions, evidence)
+softdepend: [LuckPerms, Vault, WorldGuard, PlaceholderAPI, Citizens]
+libraries:
+  - com.zaxxer:HikariCP:${hikariVersion}
+  - org.flywaydb:flyway-core:${flywayVersion}
+  - org.flywaydb:flyway-mysql:${flywayVersion}
+  - org.mariadb.jdbc:mariadb-java-client:${mariadbVersion}
+commands:
+  afterlife:
+    description: AfterLifeRP administration and diagnostics
+    usage: /afterlife <version|health|setup|debug>
+  id:
+    description: Show the permanent public ID
+    usage: /id
+    aliases: [identita]
+  setnick:
+    description: Set or remove the VIP nickname
+    usage: /setnick <nickname|reset|off>
+permissions:
+  afterlife.admin:
+    description: Administrative diagnostics
+    default: op
+  afterlife.admin.setup:
+    description: POI and infrastructure setup
+    default: op
+  afterlife.vip.nickname:
+    description: Custom short nametag nickname
+    default: false

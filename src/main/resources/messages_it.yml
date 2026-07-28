@@ -1,0 +1,46 @@
+# Messaggi in italiano (MiniMessage). Le chiavi restano in inglese.
+prefix: "<dark_gray>[<gradient:#7b2ff7:#f107a3>AfterLife</gradient>]</dark_gray> "
+
+general:
+  no-permission: "<red>Non hai il permesso per farlo.</red>"
+  player-only: "<red>Questo comando può essere usato solo da un giocatore.</red>"
+  db-unavailable: "<red>Servizio momentaneamente non disponibile. Riprova tra poco.</red>"
+  maintenance-kick: "<red>Server in manutenzione tecnica.\nRiprova tra qualche minuto.</red>"
+  unknown-subcommand: "<red>Sottocomando sconosciuto. Usa <yellow><usage></yellow>.</red>"
+  internal-error: "<red>Errore interno. Contatta lo staff.</red>"
+
+identity:
+  id-self: "<gray>Il tuo ID permanente è <yellow>#<id></yellow>.</gray>"
+  welcome: "<gray>Bentornato, <white><name></white> <dark_gray>[#<id>]</dark_gray>.</gray>"
+
+nickname:
+  set: "<green>Nickname impostato: <white><nickname></white>.</green>"
+  removed: "<yellow>Nickname rimosso.</yellow>"
+  invalid-length: "<red>Il nickname deve avere da <min> a <max> caratteri visibili.</red>"
+  invalid-content: "<red>Il nickname contiene caratteri non consentiti.</red>"
+  usage: "<gray>Uso: <yellow>/setnick <testo|reset|off></yellow></gray>"
+
+health:
+  header: "<gray>Stato di <white>AfterLifeRP</white>:</gray>"
+  db-ok: "<green>Database: connesso (<latency>ms)</green>"
+  db-fail: "<red>Database: NON disponibile — <detail></red>"
+  adapter-ok: "<green><name>: attivo</green> <dark_gray>(<detail>)</dark_gray>"
+  adapter-missing: "<yellow><name>: non installato</yellow> <dark_gray>(<detail>)</dark_gray>"
+  version: "<gray>Versione plugin: <white><version></white> — Paper <white><paper></white></gray>"
+
+poi:
+  created: "<green>POI <white><name></white> (<type>) creato alla tua posizione.</green>"
+  removed: "<yellow>POI <white><name></white> rimosso.</yellow>"
+  already-exists: "<red>Esiste già un POI con il nome <white><name></white>.</red>"
+  not-found: "<red>Nessun POI trovato con il nome <white><name></white>.</red>"
+  invalid-type: "<red>Tipo POI non valido. Tipi consentiti: <types></red>"
+  region-not-found: "<red>La regione WorldGuard <white><region></white> non esiste in questo mondo.</red>"
+  worldguard-missing: "<red>WorldGuard non è installato: impossibile associare una regione.</red>"
+  list-header: "<gray>POI registrati (<count>):</gray>"
+  list-entry: "<dark_gray> - </dark_gray><white><name></white> <gray>(<type>)</gray> <dark_gray><world> <x>,<y>,<z><region></dark_gray>"
+  report-saved: "<green>Report setup salvato in <white><file></white>.</green>"
+  usage: "<gray>Uso: <yellow>/afterlife setup poi <create|remove|list|report></yellow></gray>"
+
+debug:
+  item-issued: "<green>Oggetto serializzato emesso: <white><type></white> <dark_gray>serial <serial></dark_gray></green>"
+  item-usage: "<gray>Uso: <yellow>/afterlife debug item <tipo> [taglio]</yellow></gray>"

@@ -1,0 +1,42 @@
+# AfterLifeRP core configuration.
+# Player-facing texts live in messages_it.yml. Rule 12: no secrets in Git —
+# this file is generated into plugins/AfterLifeRP/ at runtime and stays out of the repo.
+
+database:
+  host: 127.0.0.1
+  port: 3306
+  name: afterlife
+  user: afterlife
+  # Set the real password in the generated plugins/AfterLifeRP/config.yml, never in Git.
+  password: ""
+  pool-size: 8
+  connect-timeout-ms: 5000
+
+identity:
+  nickname:
+    min-length: 1
+    max-length: 10
+
+gui:
+  session-timeout-seconds: 120
+
+poi:
+  # Allowed POI types for /afterlife setup poi create. Extend as modules arrive.
+  types:
+    - GENERIC
+    - ELECTRICAL_CABINET
+    - TRAFFIC_LIGHT
+    - REPEATER
+    - ATM
+    - BANK_TERMINAL
+    - RESTAURANT
+    - DELIVERY_DESTINATION
+    - SHADOW_DROP
+    - HOSPITAL_WORKSTATION
+    - WORKSHOP_LIFT
+    - IMPOUND_BAY
+    - DEALERSHIP_GARAGE
+    - NIGHTCLUB_SAFE
+    - POS_TERMINAL
+    - DJ_BOOTH
+    - VIP_DOOR

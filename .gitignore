@@ -1,0 +1,9 @@
+.gradle/
+build/
+.env
+*.class
+.idea/
+*.iml
+.vscode/
+secret.key
+run/
