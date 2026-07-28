@@ -276,7 +276,7 @@ public final class AfterLifeRPPlugin extends JavaPlugin {
                 }
             });
             getLogger().info("AfterLifeRP " + getPluginMeta().getVersion()
-                    + " ready — database connected, milestone 0+1+2 services active.");
+                    + " ready — database connected, milestones 0-3 services active.");
         });
     }
 
