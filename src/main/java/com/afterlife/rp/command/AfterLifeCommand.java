@@ -650,7 +650,7 @@ public final class AfterLifeCommand implements CommandExecutor, TabCompleter {
                             return;
                         }
                         notes.forEach(note -> player.getInventory()
-                                .addItem(BankingItems.toStack(itemService, note)).values()
+                                .addItem(BankingItems.toStack(itemService, messages, note)).values()
                                 .forEach(rest -> player.getWorld()
                                         .dropItemNaturally(player.getLocation(), rest)));
                         messages.send(player, "debug.dirty-issued",

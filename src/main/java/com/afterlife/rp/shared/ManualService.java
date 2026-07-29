@@ -1,6 +1,7 @@
 package com.afterlife.rp.shared;
 
 import com.afterlife.rp.config.Messages;
+import com.afterlife.rp.config.YamlResources;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -46,7 +47,7 @@ public final class ManualService {
                 plugin.saveResource(resource, false);
             }
             if (file.exists()) {
-                byLanguage.put(lang, YamlConfiguration.loadConfiguration(file));
+                byLanguage.put(lang, YamlResources.loadWithNewKeys(plugin, file, resource));
             }
         }
         return new ManualService(byLanguage, messages.defaultLanguage());

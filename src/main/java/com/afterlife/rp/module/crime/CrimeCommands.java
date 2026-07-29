@@ -109,7 +109,7 @@ public final class CrimeCommands implements CommandExecutor, TabCompleter {
                         hand.setAmount(hand.getAmount() - 1);
                     }
                     for (SerializedItem note : result.notes()) {
-                        give(player, BankingItems.toStack(itemService, note));
+                        give(player, BankingItems.toStack(itemService, messages, note));
                     }
                     messages.send(player, "crime.sold",
                             Placeholder.unparsed("amount", Money.format(result.dirtyCents())));
@@ -135,7 +135,7 @@ public final class CrimeCommands implements CommandExecutor, TabCompleter {
                         return;
                     }
                     consumeHeld(player, held.serial());
-                    give(player, CrimeItems.toStack(itemService, bag.get()));
+                    give(player, CrimeItems.toStack(itemService, messages, bag.get()));
                     messages.send(player, "crime.sealed");
                 }));
     }
@@ -154,7 +154,7 @@ public final class CrimeCommands implements CommandExecutor, TabCompleter {
                         return;
                     }
                     consumeHeld(player, held.serial());
-                    give(player, CrimeItems.toStack(itemService, drug.get()));
+                    give(player, CrimeItems.toStack(itemService, messages, drug.get()));
                     messages.send(player, "crime.unsealed");
                 }));
     }
@@ -175,7 +175,7 @@ public final class CrimeCommands implements CommandExecutor, TabCompleter {
                         return;
                     }
                     consumeHeld(player, held.serial());
-                    give(player, CrimeItems.toStack(itemService, device.get()));
+                    give(player, CrimeItems.toStack(itemService, messages, device.get()));
                     messages.send(player, "crime.device-built");
                 }));
     }

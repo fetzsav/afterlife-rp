@@ -47,3 +47,10 @@ manuals:
       - "<bold>Spaccio</bold>\n\nIn giro per le piazze (/gang), i clienti pagano poco ma in fretta. Attento: la polizia pattuglia e i cani fiutano."
       - "<bold>Trucchi del mestiere</bold>\n\nUn sacchetto sigillato inganna il fiuto dei cani. Una scheda a circuito può diventare qualcosa di più… interessante, vicino a un bancomat."
       - "<dark_gray>Ogni colpo lascia tracce. Prima o poi, qualcuno paga.</dark_gray>"
+  soccorso:
+    title: "AfterLifeEMS"
+    author: "Ospedale AfterLife"
+    pages:
+      - "<bold>AfterLifeEMS</bold>\n<italic>Manuale del soccorritore</italic>\n\nFerite comuni: emorragie, tagli, fratture, dolori, proiettili.\n\nLo scanner medico rivela cosa affligge il paziente e quale strumento serve."
+      - "Ogni cura è una sequenza precisa: strumento sbagliato, nessun progresso.\n\nLe medicine portano un numero di lotto: l'ospedale sa sempre chi le ha prodotte."
+      - "Il certificato medico si ottiene solo da un medico, dopo le visite di rito, e ha una scadenza.\n\nIn caso di emergenza, un medico di turno arriverà sul posto."

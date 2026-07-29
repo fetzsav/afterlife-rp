@@ -213,7 +213,7 @@ public final class CrimeRuntime {
                             }
                             for (var note : result.notes()) {
                                 hacker.getInventory().addItem(com.afterlife.rp.module.banking
-                                                .BankingItems.toStack(itemService, note)).values()
+                                                .BankingItems.toStack(itemService, messages, note)).values()
                                         .forEach(rest -> hacker.getWorld()
                                                 .dropItemNaturally(hacker.getLocation(), rest));
                             }

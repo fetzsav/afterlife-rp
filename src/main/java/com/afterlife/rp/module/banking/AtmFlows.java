@@ -23,8 +23,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.NamedTextColor;
-import net.kyori.adventure.text.format.TextDecoration;
 import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
@@ -131,7 +129,7 @@ public final class AtmFlows {
                 bankingService.voidAndQueueRedelivery(note, result.transactionId());
                 continue;
             }
-            ItemStack stack = BankingItems.toStack(itemService, note);
+            ItemStack stack = BankingItems.toStack(itemService, messages, note);
             Map<Integer, ItemStack> overflow = player.getInventory().addItem(stack);
             if (!overflow.isEmpty()) {
                 // Inventory changed between the pre-check and delivery (§7.4 step 8).
@@ -214,13 +212,15 @@ public final class AtmFlows {
 
         long balance = accountService.cachedBalance(account.id()).orElse(account.balance());
         buttons.put(4, GuiButton.of(
-                icon(Material.GOLD_INGOT, "Saldo: " + Money.format(balance), NamedTextColor.YELLOW),
+                icon(Material.GOLD_INGOT, messages.menuText(player, "gui.atm.balance",
+                        Placeholder.unparsed("amount", Money.format(balance)))),
                 (p, click) -> {}));
 
         int slot = 10;
         for (long quickAmount : config.quickAmountsCents()) {
             buttons.put(slot, GuiButton.of(
-                    icon(Material.PAPER, "Preleva " + Money.format(quickAmount), NamedTextColor.GREEN),
+                    icon(Material.PAPER, messages.menuText(player, "gui.atm.withdraw",
+                            Placeholder.unparsed("amount", Money.format(quickAmount)))),
                     (p, click) -> {
                         p.closeInventory();
                         withdraw(p, quickAmount);
@@ -229,13 +229,13 @@ public final class AtmFlows {
         }
 
         buttons.put(20, GuiButton.of(
-                icon(Material.HOPPER, "Deposita tutte le banconote", NamedTextColor.AQUA),
+                icon(Material.HOPPER, messages.menuText(player, "gui.atm.deposit-all")),
                 (p, click) -> {
                     p.closeInventory();
                     depositAll(p);
                 }));
         buttons.put(24, GuiButton.of(
-                icon(Material.WRITABLE_BOOK, "Ultimi movimenti", NamedTextColor.GOLD),
+                icon(Material.WRITABLE_BOOK, messages.menuText(player, "gui.atm.statement")),
                 (p, click) -> {
                     p.closeInventory();
                     sendStatement(p);
@@ -244,7 +244,7 @@ public final class AtmFlows {
         return new GuiMenu() {
             @Override
             public Component title() {
-                return Component.text("Bancomat AfterLife", NamedTextColor.DARK_GREEN);
+                return messages.bareFor(player, "gui.atm.title");
             }
 
             @Override
@@ -264,10 +264,10 @@ public final class AtmFlows {
         };
     }
 
-    private ItemStack icon(Material material, String text, NamedTextColor color) {
+    private ItemStack icon(Material material, Component name) {
         ItemStack stack = new ItemStack(material);
         var meta = stack.getItemMeta();
-        meta.displayName(Component.text(text, color).decoration(TextDecoration.ITALIC, false));
+        meta.displayName(name);
         stack.setItemMeta(meta);
         return stack;
     }

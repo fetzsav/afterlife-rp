@@ -46,3 +46,10 @@ manuals:
       - "<bold>Dealing</bold>\n\nOut on the spots (/gang), customers pay little but fast. Careful: the police patrol and the dogs sniff."
       - "<bold>Tricks of the trade</bold>\n\nA sealed bag beats a dog's nose. A circuit board can become something more… interesting, near an ATM."
       - "<dark_gray>Every job leaves traces. Sooner or later, someone pays.</dark_gray>"
+  soccorso:
+    title: "AfterLifeEMS"
+    author: "AfterLife Hospital"
+    pages:
+      - "<bold>AfterLifeEMS</bold>\n<italic>First responder handbook</italic>\n\nCommon injuries: bleeding, cuts, fractures, leg pain, projectile wounds.\n\nThe medical scanner reveals what afflicts a patient and which tool is needed."
+      - "Every treatment is an exact sequence: the wrong tool makes no progress.\n\nMedicines carry a batch number — the hospital always knows who produced them."
+      - "A medical certificate comes only from a medic, after the required examinations, and it expires.\n\nIn an emergency, an on-duty medic will come to you."

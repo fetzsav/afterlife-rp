@@ -12,8 +12,6 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.NamedTextColor;
-import net.kyori.adventure.text.format.TextDecoration;
 import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.bukkit.Bukkit;
@@ -139,8 +137,7 @@ public final class LegalCommands implements CommandExecutor, TabCompleter {
                     .thenAccept(item -> databaseManager.db().onMain(() -> {
                         Player proposer = Bukkit.getPlayer(proposal.proposer());
                         ItemStack stack = itemService.toItemStack(item, Material.PAPER,
-                                Component.text("Contratto firmato", NamedTextColor.YELLOW)
-                                        .decoration(TextDecoration.ITALIC, false));
+                                messages.itemName("items.contract-signed"));
                         Player recipient = proposer != null ? proposer : player;
                         recipient.getInventory().addItem(stack).values().forEach(rest ->
                                 recipient.getWorld().dropItemNaturally(recipient.getLocation(), rest));
@@ -189,9 +186,7 @@ public final class LegalCommands implements CommandExecutor, TabCompleter {
                                 }
                                 ItemStack inHand = player.getInventory().getItemInMainHand();
                                 var meta = inHand.getItemMeta();
-                                meta.displayName(Component.text("Contratto validato ⚖",
-                                                NamedTextColor.GOLD)
-                                        .decoration(TextDecoration.ITALIC, false));
+                                meta.displayName(messages.itemName("items.contract-validated"));
                                 meta.setEnchantmentGlintOverride(true);
                                 inHand.setItemMeta(meta);
                                 messages.send(player, "legal.contract-validated");

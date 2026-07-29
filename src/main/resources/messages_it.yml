@@ -47,6 +47,61 @@ poi:
   report-saved: "<green>Report setup salvato in <white><file></white>.</green>"
   usage: "<gray>Uso: <yellow>/afterlife setup poi <create|remove|list|report></yellow></gray>"
 
+# Nomi degli oggetti. Un oggetto fisico porta UN solo nome per chiunque lo veda,
+# quindi questi testi usano sempre la lingua predefinita (language.default), a
+# differenza dei messaggi in chat che seguono la scelta /language di ogni player.
+items:
+  banknote: "<green>Banconota — <amount></green>"
+  dirty-money: "<dark_red>Denaro sporco — <amount></dark_red>"
+  credit-card: "<aqua>Carta di credito AfterLife</aqua>"
+  check: "<gold>Assegno — <amount></gold>"
+  property-key: "<yellow>Chiave — <property></yellow>"
+  black-file: "<dark_red>File confidenziale — <property></dark_red>"
+  receipt: "<white>Scontrino — <amount></white>"
+  contract-signed: "<yellow>Contratto firmato</yellow>"
+  contract-validated: "<gold>Contratto validato ⚖</gold>"
+  circuit-board: "<gold>Scheda a circuito intatta</gold>"
+  drink: "<aqua><name></aqua>"
+  drink-masterwork: "<gold><name> ★</gold>"
+  drink-diluted: "<gray><name> (annacquato)</gray>"
+  unknown: "<white><type></white>"
+  ems:
+    forceps: "<aqua>Pinze chirurgiche</aqua>"
+    bandage: "<white>Benda sterile</white>"
+    splint: "<yellow>Stecca ortopedica</yellow>"
+    medkit: "<red>Kit medico</red>"
+    defibrillator: "<gold>Defibrillatore</gold>"
+    scanner: "<aqua>Scanner medico</aqua>"
+    extraction-syringe: "<dark_green>Siringa da estrazione</dark_green>"
+    adrenaline: "<dark_red>Adrenalina</dark_red>"
+    chemical: "<dark_green>Composto chimico tossico</dark_green>"
+    certificate: "<green>Certificato medico</green>"
+  crime:
+    drug: "<light_purple>Dose</light_purple>"
+    sealed-bag: "<gray>Sacchetto sigillato</gray>"
+    hack-device: "<dark_red>Dispositivo di hacking ATM</dark_red>"
+
+# Titoli e pulsanti dei menu; seguono la lingua di chi guarda.
+gui:
+  atm:
+    title: "<dark_green>Bancomat AfterLife</dark_green>"
+    balance: "<yellow>Saldo: <amount></yellow>"
+    withdraw: "<green>Preleva <amount></green>"
+    deposit-all: "<aqua>Deposita tutte le banconote</aqua>"
+    statement: "<gold>Ultimi movimenti</gold>"
+  wiring:
+    title: "<dark_aqua>Cablaggio — ordine crescente</dark_aqua>"
+    fuse: "<yellow>Fusibile <number></yellow>"
+  shaker:
+    title: "<dark_aqua>Shaker — colpisci sul VERDE</dark_aqua>"
+    hit: "<white>SHAKERA!</white>"
+
+# Testo nella action bar durante le missioni.
+actionbar:
+  mission-target: "<aqua>➤ <name>  <distance>m</aqua>"
+  afk-cancelled: "<red>✖ Consegna annullata: inattività</red>"
+  afk-warning: "<gold>⚠ Muoviti o la missione verrà annullata!</gold>"
+
 setup:
   menu-header: "<gray>Configurazione AfterLife — clicca un comando per inserirlo in chat:</gray>"
   menu-entry: "<dark_gray> - </dark_gray><white><label></white>\n<dark_gray>   </dark_gray><yellow><command></yellow>"

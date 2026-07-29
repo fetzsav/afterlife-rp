@@ -202,7 +202,7 @@ public final class DeliveryCommands implements CommandExecutor, TabCompleter {
                     }
                     removePackage(player, mission);
                     for (SerializedItem note : outcome.notes()) {
-                        player.getInventory().addItem(BankingItems.toStack(itemService, note))
+                        player.getInventory().addItem(BankingItems.toStack(itemService, messages, note))
                                 .values().forEach(rest -> player.getWorld()
                                         .dropItemNaturally(player.getLocation(), rest));
                     }

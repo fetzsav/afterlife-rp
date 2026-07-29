@@ -129,7 +129,7 @@ public final class EmsRuntime {
                             if (chemical.isEmpty() || !player.isOnline()) {
                                 return;
                             }
-                            var stack = EmsItems.toStack(itemService, chemical.get());
+                            var stack = EmsItems.toStack(itemService, messages, chemical.get());
                             player.getInventory().addItem(stack).values().forEach(rest ->
                                     player.getWorld().dropItemNaturally(player.getLocation(), rest));
                             messages.send(player, "ems.extraction-done");

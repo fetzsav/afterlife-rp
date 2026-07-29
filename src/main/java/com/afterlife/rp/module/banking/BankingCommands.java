@@ -215,7 +215,7 @@ public final class BankingCommands implements CommandExecutor, TabCompleter {
                         atmFlows.sendLedgerFailure(player, LedgerService.failureFrom(error).status());
                         return;
                     }
-                    ItemStack stack = BankingItems.toStack(itemService, check);
+                    ItemStack stack = BankingItems.toStack(itemService, messages, check);
                     player.getInventory().addItem(stack).values().forEach(rest ->
                             player.getWorld().dropItemNaturally(player.getLocation(), rest));
                     messages.send(player, "bank.check-issued",
@@ -298,7 +298,7 @@ public final class BankingCommands implements CommandExecutor, TabCompleter {
                         if (!target.isOnline()) {
                             return;
                         }
-                        ItemStack stack = BankingItems.toStack(itemService, card);
+                        ItemStack stack = BankingItems.toStack(itemService, messages, card);
                         target.getInventory().addItem(stack).values().forEach(rest ->
                                 target.getWorld().dropItemNaturally(target.getLocation(), rest));
                         messages.send(player, "bank.card-issued",

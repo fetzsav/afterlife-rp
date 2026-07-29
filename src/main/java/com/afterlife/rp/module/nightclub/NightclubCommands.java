@@ -22,8 +22,6 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.NamedTextColor;
-import net.kyori.adventure.text.format.TextDecoration;
 import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
@@ -194,13 +192,13 @@ public final class NightclubCommands implements CommandExecutor, TabCompleter {
             switch (outcome.result()) {
                 case COMPLETED -> {
                     for (SerializedItem drink : outcome.drinks()) {
-                        give(customer, NightclubItems.drinkStack(itemService, service, drink));
+                        give(customer, NightclubItems.drinkStack(itemService, messages, service, drink));
                     }
-                    give(customer, NightclubItems.receiptStack(itemService,
+                    give(customer, NightclubItems.receiptStack(itemService, messages,
                             outcome.customerReceipt()));
                     Player bartender = Bukkit.getPlayer(view.employee());
                     if (bartender != null) {
-                        give(bartender, NightclubItems.receiptStack(itemService,
+                        give(bartender, NightclubItems.receiptStack(itemService, messages,
                                 outcome.bartenderReceipt()));
                         messages.send(bartender, "club.order-completed-bartender",
                                 Placeholder.unparsed("amount", Money.format(outcome.totalCents())));
@@ -244,7 +242,7 @@ public final class NightclubCommands implements CommandExecutor, TabCompleter {
         }
         AtomicInteger phase = new AtomicInteger(random.nextInt(3));
         Map<Integer, GuiButton> buttons = new HashMap<>();
-        ItemStack indicator = phaseItem(phase.get());
+        ItemStack indicator = phaseItem(bartender, phase.get());
         BukkitTask[] cycler = new BukkitTask[1];
         buttons.put(13, GuiButton.of(indicator, (p, click) -> {
             if (cycler[0] != null) {
@@ -265,7 +263,7 @@ public final class NightclubCommands implements CommandExecutor, TabCompleter {
                             messages.send(p, "club.out-of-stock");
                             return;
                         }
-                        give(p, NightclubItems.drinkStack(itemService, service, drink.get()));
+                        give(p, NightclubItems.drinkStack(itemService, messages, service, drink.get()));
                         messages.send(p, "club.mixed",
                                 Placeholder.unparsed("quality", quality));
                     }));
@@ -273,7 +271,7 @@ public final class NightclubCommands implements CommandExecutor, TabCompleter {
         GuiMenu menu = new GuiMenu() {
             @Override
             public Component title() {
-                return Component.text("Shaker — colpisci sul VERDE", NamedTextColor.DARK_AQUA);
+                return messages.bareFor(bartender, "gui.shaker.title");
             }
 
             @Override
@@ -300,11 +298,11 @@ public final class NightclubCommands implements CommandExecutor, TabCompleter {
                 return;
             }
             phase.incrementAndGet();
-            bartender.getOpenInventory().getTopInventory().setItem(13, phaseItem(phase.get()));
+            bartender.getOpenInventory().getTopInventory().setItem(13, phaseItem(bartender, phase.get()));
         }, 10L, 10L);
     }
 
-    private ItemStack phaseItem(int phase) {
+    private ItemStack phaseItem(Player viewer, int phase) {
         Material material = switch (phase % 3) {
             case 0 -> Material.LIME_STAINED_GLASS_PANE;
             case 1 -> Material.YELLOW_STAINED_GLASS_PANE;
@@ -312,8 +310,7 @@ public final class NightclubCommands implements CommandExecutor, TabCompleter {
         };
         ItemStack stack = new ItemStack(material);
         var meta = stack.getItemMeta();
-        meta.displayName(Component.text("SHAKERA!", NamedTextColor.WHITE)
-                .decoration(TextDecoration.ITALIC, false));
+        meta.displayName(messages.menuText(viewer, "gui.shaker.hit"));
         stack.setItemMeta(meta);
         return stack;
     }

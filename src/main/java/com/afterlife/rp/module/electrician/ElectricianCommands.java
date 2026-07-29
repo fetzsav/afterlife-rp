@@ -18,8 +18,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.NamedTextColor;
-import net.kyori.adventure.text.format.TextDecoration;
 import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder;
 import org.bukkit.Material;
 import org.bukkit.command.Command;
@@ -188,8 +186,8 @@ public final class ElectricianCommands implements CommandExecutor, TabCompleter 
             int fuseNumber = i + 1;
             ItemStack icon = new ItemStack(Material.REDSTONE_LAMP, fuseNumber);
             var meta = icon.getItemMeta();
-            meta.displayName(Component.text("Fusibile " + fuseNumber, NamedTextColor.YELLOW)
-                    .decoration(TextDecoration.ITALIC, false));
+            meta.displayName(messages.menuText(player, "gui.wiring.fuse",
+                    Placeholder.unparsed("number", String.valueOf(fuseNumber))));
             icon.setItemMeta(meta);
             buttons.put(slot, GuiButton.of(icon, (p, click) -> {
                 if (!sequence.click(slot)) {
@@ -206,7 +204,7 @@ public final class ElectricianCommands implements CommandExecutor, TabCompleter 
         guiManager.open(player, new GuiMenu() {
             @Override
             public Component title() {
-                return Component.text("Cablaggio — ordine crescente", NamedTextColor.DARK_AQUA);
+                return messages.bareFor(player, "gui.wiring.title");
             }
 
             @Override
@@ -246,8 +244,7 @@ public final class ElectricianCommands implements CommandExecutor, TabCompleter 
                     if (result.circuitBoard()) {
                         ItemStack board = itemService.toItemStack(result.boardItem(),
                                 Material.REPEATER,
-                                Component.text("Scheda a circuito intatta", NamedTextColor.GOLD)
-                                        .decoration(TextDecoration.ITALIC, false));
+                                messages.itemName("items.circuit-board"));
                         var meta = board.getItemMeta();
                         meta.setCustomModelData(ElectricianService.CIRCUIT_BOARD_MODEL_DATA);
                         board.setItemMeta(meta);

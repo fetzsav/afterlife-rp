@@ -1,5 +1,6 @@
 package com.afterlife.rp.module.banking;
 
+import com.afterlife.rp.config.Messages;
 import com.afterlife.rp.database.DatabaseManager;
 import com.afterlife.rp.shared.economy.AccountService;
 import com.afterlife.rp.shared.economy.PendingDeliveryService;
@@ -26,6 +27,7 @@ public final class BankingListener implements Listener {
     private final AccountService accountService;
     private final PendingDeliveryService pendingDeliveryService;
     private final SerializedItemService itemService;
+    private final Messages messages;
     private final Logger logger;
 
     public BankingListener(
@@ -33,11 +35,13 @@ public final class BankingListener implements Listener {
             AccountService accountService,
             PendingDeliveryService pendingDeliveryService,
             SerializedItemService itemService,
+            Messages messages,
             Logger logger) {
         this.databaseManager = databaseManager;
         this.accountService = accountService;
         this.pendingDeliveryService = pendingDeliveryService;
         this.itemService = itemService;
+        this.messages = messages;
         this.logger = logger;
     }
 
@@ -82,7 +86,7 @@ public final class BankingListener implements Listener {
                             if (record.isEmpty() || !player.isOnline()) {
                                 return;
                             }
-                            var stack = BankingItems.toStack(itemService, record.get());
+                            var stack = BankingItems.toStack(itemService, messages, record.get());
                             player.getInventory().addItem(stack).values().forEach(rest ->
                                     player.getWorld().dropItemNaturally(player.getLocation(), rest));
                         }));
@@ -109,7 +113,7 @@ public final class BankingListener implements Listener {
                                 pending.reason(), pending.transactionId());
                         return;
                     }
-                    var stack = BankingItems.toStack(itemService, item);
+                    var stack = BankingItems.toStack(itemService, messages, item);
                     player.getInventory().addItem(stack).values().forEach(rest ->
                             player.getWorld().dropItemNaturally(player.getLocation(), rest));
                 }));

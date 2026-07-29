@@ -2,6 +2,7 @@ package com.afterlife.rp.module.ems;
 
 import com.afterlife.rp.config.Messages;
 import com.afterlife.rp.database.DatabaseManager;
+import com.afterlife.rp.shared.ManualService;
 import com.afterlife.rp.shared.economy.AccountService;
 import com.afterlife.rp.shared.items.SerializedItemService;
 import com.afterlife.rp.shared.missions.JobSessionService;
@@ -10,8 +11,6 @@ import com.afterlife.rp.shared.regions.PoiService;
 import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
-import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
@@ -22,7 +21,6 @@ import com.afterlife.rp.command.TabComplete;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.BookMeta;
 import org.jetbrains.annotations.NotNull;
 
 /**
@@ -32,6 +30,7 @@ import org.jetbrains.annotations.NotNull;
 public final class EmsCommands implements CommandExecutor, TabCompleter {
 
     private static final String PERMISSION = "afterlife.ems.medic";
+    private static final String MANUAL_TOPIC = "soccorso";
 
     private final DatabaseManager databaseManager;
     private final EmsService service;
@@ -42,6 +41,7 @@ public final class EmsCommands implements CommandExecutor, TabCompleter {
     private final SerializedItemService itemService;
     private final PoiService poiService;
     private final Messages messages;
+    private final ManualService manualService;
 
     public EmsCommands(
             DatabaseManager databaseManager,
@@ -52,7 +52,8 @@ public final class EmsCommands implements CommandExecutor, TabCompleter {
             AccountService accountService,
             SerializedItemService itemService,
             PoiService poiService,
-            Messages messages) {
+            Messages messages,
+            ManualService manualService) {
         this.databaseManager = databaseManager;
         this.service = service;
         this.runtime = runtime;
@@ -62,6 +63,7 @@ public final class EmsCommands implements CommandExecutor, TabCompleter {
         this.itemService = itemService;
         this.poiService = poiService;
         this.messages = messages;
+        this.manualService = manualService;
     }
 
     @Override
@@ -238,7 +240,7 @@ public final class EmsCommands implements CommandExecutor, TabCompleter {
                         messages.send(medic, "ems.produce-failed");
                         return;
                     }
-                    give(medic, EmsItems.toStack(itemService, produced.get().item()));
+                    give(medic, EmsItems.toStack(itemService, messages, produced.get().item()));
                     messages.send(medic, "ems.produced",
                             Placeholder.unparsed("type", medicineType),
                             Placeholder.unparsed("batch", produced.get().batchCode()));
@@ -292,7 +294,7 @@ public final class EmsCommands implements CommandExecutor, TabCompleter {
                     }
                     switch (result.status()) {
                         case ISSUED -> {
-                            give(patient, EmsItems.toStack(itemService, result.item()));
+                            give(patient, EmsItems.toStack(itemService, messages, result.item()));
                             messages.send(medic, "ems.certificate-issued",
                                     Placeholder.unparsed("player", patient.getName()));
                             messages.send(patient, "ems.certificate-received");
@@ -357,35 +359,19 @@ public final class EmsCommands implements CommandExecutor, TabCompleter {
                     if (handData.isPresent() && handData.get().serial().equals(held.serial())) {
                         medic.getInventory().setItemInMainHand(null);
                     }
-                    give(medic, EmsItems.toStack(itemService, produced.get().item()));
+                    give(medic, EmsItems.toStack(itemService, messages, produced.get().item()));
                     messages.send(medic, "ems.converted",
                             Placeholder.unparsed("batch", produced.get().batchCode()));
                 }));
     }
 
     private void giveManual(Player player) {
-        ItemStack book = new ItemStack(Material.WRITTEN_BOOK);
-        BookMeta meta = (BookMeta) book.getItemMeta();
-        meta.setTitle("AfterLifeEMS");
-        meta.setAuthor("Ospedale AfterLife");
-        meta.addPages(
-                Component.text("""
-                        AfterLifeEMS — Manuale del soccorritore
-
-                        Ferite comuni: emorragie, tagli, fratture, dolori, proiettili.
-
-                        Lo scanner medico rivela cosa affligge il paziente e quale strumento serve."""),
-                Component.text("""
-                        Ogni cura è una sequenza precisa: strumento sbagliato, nessun progresso.
-
-                        Le medicine portano un numero di lotto: l'ospedale sa sempre chi le ha prodotte."""),
-                Component.text("""
-                        Il certificato medico si ottiene solo da un medico, dopo le visite di rito, e ha una scadenza.
-
-                        In caso di emergenza, un medico di turno arriverà sul posto."""));
-        book.setItemMeta(meta);
-        give(player, book);
-        messages.send(player, "ems.manual-given");
+        // The medic handbook is a normal manual topic, so it follows the reader's
+        // language and is also reachable through /manuale soccorso.
+        manualService.book(MANUAL_TOPIC, messages.languageFor(player)).ifPresentOrElse(book -> {
+            give(player, book);
+            messages.send(player, "ems.manual-given");
+        }, () -> messages.send(player, "general.internal-error"));
     }
 
     // --- helpers ---

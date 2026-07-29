@@ -1,12 +1,12 @@
 package com.afterlife.rp.shared.missions;
 
+import com.afterlife.rp.config.Messages;
 import com.afterlife.rp.shared.regions.Poi;
 import com.afterlife.rp.shared.regions.PoiService;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
-import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
@@ -24,13 +24,16 @@ public final class MissionTracker {
     private final Plugin plugin;
     private final MissionService missionService;
     private final PoiService poiService;
+    private final Messages messages;
     private final Map<UUID, Movement> movementByPlayer = new ConcurrentHashMap<>();
     private BukkitTask task;
 
-    public MissionTracker(Plugin plugin, MissionService missionService, PoiService poiService) {
+    public MissionTracker(Plugin plugin, MissionService missionService, PoiService poiService,
+            Messages messages) {
         this.plugin = plugin;
         this.missionService = missionService;
         this.poiService = poiService;
+        this.messages = messages;
     }
 
     public void start() {
@@ -58,8 +61,9 @@ public final class MissionTracker {
                 Location location = target.location();
                 if (location != null && location.getWorld().equals(player.getWorld())) {
                     int distance = (int) location.distance(player.getLocation());
-                    player.sendActionBar(Component.text("➤ " + target.name() + "  " + distance + "m",
-                            NamedTextColor.AQUA));
+                    player.sendActionBar(messages.bareFor(player, "actionbar.mission-target",
+                            Placeholder.unparsed("name", target.name()),
+                            Placeholder.unparsed("distance", String.valueOf(distance))));
                     player.setCompassTarget(location);
                 }
             }
@@ -87,14 +91,12 @@ public final class MissionTracker {
         long idleSeconds = (now - movement.lastMoveMs()) / 1000;
         if (idleSeconds >= thresholds[1]) {
             movementByPlayer.remove(player.getUniqueId());
-            player.sendActionBar(Component.text("✖ Consegna annullata: inattività",
-                    NamedTextColor.RED));
+            player.sendActionBar(messages.bareFor(player, "actionbar.afk-cancelled"));
             missionService.end(mission, "CANCELLED", "afk");
         } else if (idleSeconds >= thresholds[0] && !movement.warned()) {
             movementByPlayer.put(player.getUniqueId(),
                     new Movement(movement.lastPosition(), movement.lastMoveMs(), true));
-            player.sendActionBar(Component.text("⚠ Muoviti o la missione verrà annullata!",
-                    NamedTextColor.GOLD));
+            player.sendActionBar(messages.bareFor(player, "actionbar.afk-warning"));
         }
     }
 }

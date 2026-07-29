@@ -195,6 +195,8 @@ public final class AfterLifeRPPlugin extends JavaPlugin {
         guiManager = new GuiManager(this, Duration.ofSeconds(coreConfig.guiSessionTimeoutSeconds()));
         guiManager.start();
 
+        ManualService manualService = ManualService.load(this, messages);
+
         IntegrationManager integrationManager = new IntegrationManager();
         integrationManager.detect(this, identityService, getLogger());
         // Route serialized-item presentation through the custom-model provider
@@ -222,7 +224,7 @@ public final class AfterLifeRPPlugin extends JavaPlugin {
             }
             getServer().getPluginManager().registerEvents(new BankingListener(
                     databaseManager, accountService, pendingDeliveryService, itemService,
-                    getLogger()), this);
+                    messages, getLogger()), this);
             setupRegistry.active("banking", SetupRegistry.requirements(
                     bankingConfig.atmRequirePoi()
                             ? SetupRequirement.poi("banking.atm", bankingConfig.atmPoiTypes(), 1)
@@ -318,7 +320,7 @@ public final class AfterLifeRPPlugin extends JavaPlugin {
         MissionService missionService = new MissionService(databaseManager,
                 new MissionRepository(), auditService, getLogger());
         JobSessionService jobSessionService = new JobSessionService(databaseManager);
-        missionTracker = new MissionTracker(this, missionService, poiService);
+        missionTracker = new MissionTracker(this, missionService, poiService, messages);
         missionTracker.start();
         getServer().getPluginManager().registerEvents(new MissionListener(
                 databaseManager, missionService, jobSessionService), this);
@@ -490,7 +492,7 @@ public final class AfterLifeRPPlugin extends JavaPlugin {
                 });
                 EmsCommands emsCommands = new EmsCommands(
                         databaseManager, emsService, emsRuntime, emsListener, jobSessionService,
-                        accountService, itemService, poiService, messages);
+                        accountService, itemService, poiService, messages, manualService);
                 Objects.requireNonNull(getCommand("ems")).setExecutor(emsCommands);
                 getCommand("ems").setTabCompleter(emsCommands);
                 emsRuntime.start();
@@ -651,7 +653,6 @@ public final class AfterLifeRPPlugin extends JavaPlugin {
         Objects.requireNonNull(getCommand("id")).setExecutor(new IdCommand(identityService, messages));
         Objects.requireNonNull(getCommand("setnick")).setExecutor(new SetNickCommand(
                 databaseManager, identityService, nametagService, auditService, coreConfig, messages));
-        ManualService manualService = ManualService.load(this, messages);
         ManualCommand manualCommand = new ManualCommand(manualService, messages);
         PluginCommand manualPluginCommand = Objects.requireNonNull(getCommand("manuale"));
         manualPluginCommand.setExecutor(manualCommand);

@@ -1,48 +1,51 @@
 package com.afterlife.rp.module.ems;
 
+import com.afterlife.rp.config.Messages;
 import com.afterlife.rp.shared.items.SerializedItem;
 import com.afterlife.rp.shared.items.SerializedItemService;
-import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.NamedTextColor;
-import net.kyori.adventure.text.format.TextDecoration;
+import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder;
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
 
-/** Presentation for medical items; authority is PDC + DB (rule 6). */
+/**
+ * Presentation for medical items; authority is PDC + DB (rule 6). Names come
+ * from items.ems.* in the default language (an item reads the same for all).
+ */
 public final class EmsItems {
 
     private EmsItems() {}
 
-    public static ItemStack toStack(SerializedItemService itemService, SerializedItem item) {
+    public static ItemStack toStack(SerializedItemService itemService, Messages messages,
+            SerializedItem item) {
         return switch (item.itemType()) {
-            case "forceps" -> named(itemService, item, Material.SHEARS, "Pinze chirurgiche",
-                    NamedTextColor.AQUA);
-            case "bandage" -> named(itemService, item, Material.PAPER, "Benda sterile",
-                    NamedTextColor.WHITE);
-            case "splint" -> named(itemService, item, Material.STICK, "Stecca ortopedica",
-                    NamedTextColor.YELLOW);
-            case "medkit" -> named(itemService, item, Material.BUNDLE, "Kit medico",
-                    NamedTextColor.RED);
-            case "defibrillator" -> named(itemService, item, Material.LIGHTNING_ROD,
-                    "Defibrillatore", NamedTextColor.GOLD);
-            case "scanner" -> named(itemService, item, Material.SPYGLASS, "Scanner medico",
-                    NamedTextColor.AQUA);
-            case "extraction_syringe" -> named(itemService, item, Material.ARROW,
-                    "Siringa da estrazione", NamedTextColor.DARK_GREEN);
-            case "adrenaline" -> named(itemService, item, Material.POTION, "Adrenalina",
-                    NamedTextColor.DARK_RED);
-            case EmsService.ITEM_CHEMICAL -> named(itemService, item, Material.SLIME_BALL,
-                    "Composto chimico tossico", NamedTextColor.DARK_GREEN);
-            case EmsService.ITEM_CERTIFICATE -> named(itemService, item, Material.PAPER,
-                    "Certificato medico", NamedTextColor.GREEN);
-            default -> named(itemService, item, Material.PAPER, item.itemType(),
-                    NamedTextColor.WHITE);
+            case "forceps" -> named(itemService, messages, item, Material.SHEARS,
+                    "items.ems.forceps");
+            case "bandage" -> named(itemService, messages, item, Material.PAPER,
+                    "items.ems.bandage");
+            case "splint" -> named(itemService, messages, item, Material.STICK,
+                    "items.ems.splint");
+            case "medkit" -> named(itemService, messages, item, Material.BUNDLE,
+                    "items.ems.medkit");
+            case "defibrillator" -> named(itemService, messages, item, Material.LIGHTNING_ROD,
+                    "items.ems.defibrillator");
+            case "scanner" -> named(itemService, messages, item, Material.SPYGLASS,
+                    "items.ems.scanner");
+            case "extraction_syringe" -> named(itemService, messages, item, Material.ARROW,
+                    "items.ems.extraction-syringe");
+            case "adrenaline" -> named(itemService, messages, item, Material.POTION,
+                    "items.ems.adrenaline");
+            case EmsService.ITEM_CHEMICAL -> named(itemService, messages, item, Material.SLIME_BALL,
+                    "items.ems.chemical");
+            case EmsService.ITEM_CERTIFICATE -> named(itemService, messages, item, Material.PAPER,
+                    "items.ems.certificate");
+            default -> itemService.toItemStack(item, Material.PAPER,
+                    messages.itemName("items.unknown",
+                            Placeholder.unparsed("type", item.itemType())));
         };
     }
 
-    private static ItemStack named(SerializedItemService itemService, SerializedItem item,
-            Material material, String name, NamedTextColor color) {
-        return itemService.toItemStack(item, material,
-                Component.text(name, color).decoration(TextDecoration.ITALIC, false));
+    private static ItemStack named(SerializedItemService itemService, Messages messages,
+            SerializedItem item, Material material, String key) {
+        return itemService.toItemStack(item, material, messages.itemName(key));
     }
 }

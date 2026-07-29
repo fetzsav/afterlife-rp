@@ -15,9 +15,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 import java.util.UUID;
-import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.NamedTextColor;
-import net.kyori.adventure.text.format.TextDecoration;
 import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
@@ -190,8 +187,8 @@ public final class RealEstateCommands implements CommandExecutor, TabCompleter {
                     }
                     removeSerials(tenant, Set.copyOf(result.consumedSerials()));
                     ItemStack file = itemService.toItemStack(result.fileItem(), Material.PAPER,
-                            Component.text("File Confidenziale — " + propertyName,
-                                    NamedTextColor.DARK_PURPLE).decoration(TextDecoration.ITALIC, false));
+                            messages.itemName("items.black-file",
+                                    Placeholder.unparsed("property", propertyName)));
                     director.getInventory().addItem(file).values().forEach(rest ->
                             director.getWorld().dropItemNaturally(director.getLocation(), rest));
                     messages.send(director, "estate.dirty-rented",
@@ -284,7 +281,7 @@ public final class RealEstateCommands implements CommandExecutor, TabCompleter {
                             return;
                         }
                         for (SerializedItem note : notes) {
-                            player.getInventory().addItem(BankingItems.toStack(itemService, note))
+                            player.getInventory().addItem(BankingItems.toStack(itemService, messages, note))
                                     .values().forEach(rest -> player.getWorld()
                                             .dropItemNaturally(player.getLocation(), rest));
                         }
@@ -317,8 +314,8 @@ public final class RealEstateCommands implements CommandExecutor, TabCompleter {
             return;
         }
         ItemStack stack = itemService.toItemStack(key, Material.TRIPWIRE_HOOK,
-                Component.text("Chiave — " + propertyName, NamedTextColor.YELLOW)
-                        .decoration(TextDecoration.ITALIC, false));
+                messages.itemName("items.property-key",
+                        Placeholder.unparsed("property", propertyName)));
         recipient.getInventory().addItem(stack).values().forEach(rest ->
                 recipient.getWorld().dropItemNaturally(recipient.getLocation(), rest));
     }
