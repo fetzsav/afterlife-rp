@@ -43,6 +43,23 @@ public final class IdentityService {
         });
     }
 
+    /** Persists and caches the player's chosen language code. */
+    public CompletableFuture<PlayerIdentity> setLocale(UUID uuid, String locale) {
+        return databaseManager.db().supply(connection -> {
+            repository.updateLocale(connection, uuid, locale);
+            return repository.find(connection, uuid).orElseThrow();
+        }).thenApply(identity -> {
+            cache.put(uuid, identity);
+            return identity;
+        });
+    }
+
+    /** Cached language for a player, or null when unknown/unset (→ default). */
+    public String localeOf(UUID uuid) {
+        PlayerIdentity identity = cache.get(uuid);
+        return identity == null ? null : identity.locale();
+    }
+
     public void handleQuit(UUID uuid) {
         cache.remove(uuid);
         databaseManager.db().supply(connection -> {

@@ -3,6 +3,7 @@ package com.afterlife.rp;
 import com.afterlife.rp.audit.AuditService;
 import com.afterlife.rp.command.AfterLifeCommand;
 import com.afterlife.rp.command.IdCommand;
+import com.afterlife.rp.command.LanguageCommand;
 import com.afterlife.rp.command.ManualCommand;
 import com.afterlife.rp.command.SetNickCommand;
 import com.afterlife.rp.shared.ManualService;
@@ -159,6 +160,9 @@ public final class AfterLifeRPPlugin extends JavaPlugin {
         // blocked with a maintenance message while the database is unavailable.
         AuditService auditService = new AuditService(databaseManager, getLogger());
         identityService = new IdentityService(databaseManager, new IdentityRepository());
+        // Localize messages per player once identity is available.
+        IdentityService identityRef = identityService;
+        messages.setLocaleResolver(identityRef::localeOf);
         nametagService = new NametagService();
         PoiService poiService = new PoiService(databaseManager, new PoiRepository(), auditService);
         SerializedItemRepository itemRepository = new SerializedItemRepository();
@@ -511,11 +515,16 @@ public final class AfterLifeRPPlugin extends JavaPlugin {
         Objects.requireNonNull(getCommand("id")).setExecutor(new IdCommand(identityService, messages));
         Objects.requireNonNull(getCommand("setnick")).setExecutor(new SetNickCommand(
                 databaseManager, identityService, nametagService, auditService, coreConfig, messages));
-        ManualService manualService = ManualService.load(this);
+        ManualService manualService = ManualService.load(this, messages);
         ManualCommand manualCommand = new ManualCommand(manualService, messages);
         PluginCommand manualPluginCommand = Objects.requireNonNull(getCommand("manuale"));
         manualPluginCommand.setExecutor(manualCommand);
         manualPluginCommand.setTabCompleter(manualCommand);
+        LanguageCommand languageCommand = new LanguageCommand(
+                databaseManager, identityService, nametagService, messages);
+        PluginCommand languagePluginCommand = Objects.requireNonNull(getCommand("language"));
+        languagePluginCommand.setExecutor(languageCommand);
+        languagePluginCommand.setTabCompleter(languageCommand);
 
         NightclubService nightclubServiceFinal = nightclubService;
 

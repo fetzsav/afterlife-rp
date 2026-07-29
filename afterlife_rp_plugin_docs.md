@@ -122,8 +122,18 @@ down. All player-facing text is Italian (`messages_it.yml`, MiniMessage).
 ### Core & identity
 - `/id` (`/identita`) — show permanent public ID.
 - `/setnick <text|reset|off>` — VIP nickname (`afterlife.vip.nickname`).
+- `/language` (`/lingua`, `/lang`) `[code]` — show or set your viewing language.
 - `/manuale [topic]` — in-game manual books (benvenuto, banca, legge,
-  immobili, lavori, crimine).
+  immobili, lavori, crimine), shown in your chosen language.
+
+**Localization.** Player-facing text is fully localized: each language is a
+`messages_<code>.yml` (and optional `manuals_<code>.yml`); English (`en`) and
+Italian (`it`) ship in the box. `config.yml` `language:` sets the default (used
+for the console, unset players, and missing-key fallback) and the list players
+may pick from. A player's choice is stored in `players.locale` and applied to
+every message and manual. Command names/tokens stay fixed; only rendered text
+is translated. Add a language by dropping in a new `messages_<code>.yml` and
+listing it under `language.available`.
 
 ### Banking (§9.1)
 - `/iban` — IBAN, balance, frozen state.

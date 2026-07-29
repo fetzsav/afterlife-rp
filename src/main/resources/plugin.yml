@@ -123,6 +123,10 @@ commands:
     description: Get an in-game manual book
     usage: /manuale [topic]
     aliases: [manual]
+  language:
+    description: Show or set your viewing language
+    usage: /language [code]
+    aliases: [lingua, lang]
 permissions:
   afterlife.admin:
     description: Administrative diagnostics

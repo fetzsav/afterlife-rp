@@ -12,6 +12,14 @@ database:
   pool-size: 8
   connect-timeout-ms: 5000
 
+# Player-facing language. `default` is used for the console, for players who
+# have not chosen a language, and as the fallback for missing keys. `available`
+# lists the languages players may pick with /language; each needs a matching
+# messages_<code>.yml (and optionally manuals_<code>.yml).
+language:
+  default: en
+  available: [en, it]
+
 identity:
   nickname:
     min-length: 1

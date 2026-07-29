@@ -121,6 +121,22 @@ class FoundationIT {
     }
 
     @Test
+    void playerLocaleRoundTrips() {
+        IdentityRepository repository = new IdentityRepository();
+        UUID uuid = UUID.randomUUID();
+        databaseManager.db().inTransaction(connection ->
+                repository.ensure(connection, uuid, "LangPlayer")).join();
+        // Default (unset) locale is null → server default.
+        assertEquals(null, databaseManager.db().supply(connection ->
+                repository.find(connection, uuid)).join().orElseThrow().locale());
+        // A chosen language persists and reads back.
+        databaseManager.db().inTransaction(connection ->
+                repository.updateLocale(connection, uuid, "it")).join();
+        assertEquals("it", databaseManager.db().supply(connection ->
+                repository.find(connection, uuid)).join().orElseThrow().locale());
+    }
+
+    @Test
     void serializedItemStatusTransitionWinsExactlyOnce() {
         SerializedItemRepository repository = new SerializedItemRepository();
         UUID serial = UUID.randomUUID();

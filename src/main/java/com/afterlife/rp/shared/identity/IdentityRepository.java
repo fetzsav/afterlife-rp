@@ -29,7 +29,7 @@ public final class IdentityRepository {
 
     public Optional<PlayerIdentity> find(Connection connection, UUID uuid) throws SQLException {
         try (PreparedStatement statement = connection.prepareStatement(
-                "SELECT uuid, public_id, last_name, nickname FROM players WHERE uuid = ?")) {
+                "SELECT uuid, public_id, last_name, nickname, locale FROM players WHERE uuid = ?")) {
             statement.setString(1, uuid.toString());
             try (ResultSet rs = statement.executeQuery()) {
                 if (!rs.next()) {
@@ -39,7 +39,8 @@ public final class IdentityRepository {
                         UUID.fromString(rs.getString("uuid")),
                         rs.getLong("public_id"),
                         rs.getString("last_name"),
-                        rs.getString("nickname")));
+                        rs.getString("nickname"),
+                        rs.getString("locale")));
             }
         }
     }
@@ -49,6 +50,16 @@ public final class IdentityRepository {
         try (PreparedStatement statement = connection.prepareStatement(
                 "UPDATE players SET nickname = ?, version = version + 1 WHERE uuid = ?")) {
             statement.setString(1, nickname);
+            statement.setString(2, uuid.toString());
+            return statement.executeUpdate() == 1;
+        }
+    }
+
+    /** Sets the player's chosen language code; bumps the optimistic version. */
+    public boolean updateLocale(Connection connection, UUID uuid, String locale) throws SQLException {
+        try (PreparedStatement statement = connection.prepareStatement(
+                "UPDATE players SET locale = ?, version = version + 1 WHERE uuid = ?")) {
+            statement.setString(1, locale);
             statement.setString(2, uuid.toString());
             return statement.executeUpdate() == 1;
         }

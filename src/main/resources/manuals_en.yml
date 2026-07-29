@@ -1,0 +1,48 @@
+# In-game player manuals (written books), English. Staff can edit freely:
+# each entry is title + author + a list of pages. Pages support MiniMessage.
+manuals:
+  benvenuto:
+    title: "AfterLife — Welcome"
+    author: "City of AfterLife"
+    pages:
+      - "<bold>Welcome to AfterLife</bold>\n\nA city where every trade, legal or not, depends on the others.\n\nYou have a <white>permanent ID</white> (/id) and a bank account."
+      - "The <white>jobs</white> available:\nbank, lawyer, police, electrician, rider, medic, real-estate agent, bartender, and <dark_red>crime</dark_red>.\n\nRead the dedicated manuals with <yellow>/manuale <topic></yellow>."
+      - "<white>Golden rules:</white>\n- Clean money is digital.\n- Dirty money is physical and must be laundered.\n- Every valuable item is tracked: copies are worthless.\n\nEnjoy your stay."
+  banca:
+    title: "AfterLife — The Bank"
+    author: "Bank of AfterLife"
+    pages:
+      - "<bold>The Bank</bold>\n\nEvery citizen has an <white>IBAN</white>. Check your balance and status with <yellow>/iban</yellow>."
+      - "At the <white>ATM</white> (/atm) you can:\n- withdraw cash\n- deposit banknotes\n- view recent transactions\n\nYou need a valid <white>card</white>: ask a banker for one."
+      - "<white>Transfers</white>: /bonifico to an IBAN or a player.\n<white>Checks</white>: /assegno to pay someone; redeem with /incassa.\n\nA frozen account cannot withdraw or transfer."
+  legge:
+    title: "AfterLife — Law and Order"
+    author: "Court of AfterLife"
+    pages:
+      - "<bold>Contracts</bold>\n\nWrite an agreement in a book, then <yellow>/contratto proponi</yellow>. The other party signs with <yellow>/contratto firma</yellow>. A lawyer validates it."
+      - "<bold>Criminal record</bold>\n\nOffenses stay on record. A lawyer can clean an eligible record (only served minor offenses) with a paid procedure."
+      - "<bold>Detention and appeal</bold>\n\nIf you are detained, you can call a lawyer (/avvocato). An appeal is only upheld if the detention exceeded its maximum duration."
+      - "<bold>Police</bold>\n\nA search requires consent, a warrant, or exigent circumstances. You can consent with /acconsenti. Every check is logged."
+  immobili:
+    title: "AfterLife — Real Estate"
+    author: "Real Estate Agency"
+    pages:
+      - "<bold>Buying a home</bold>\n\nSee the properties for sale with <yellow>/luoghidisponibili</yellow>. An agent closes the sale and hands you a <white>key</white>."
+      - "<bold>Keys and locks</bold>\n\nEvery home has a lock. If it is changed, all old keys stop working. Check yours with /chiave."
+      - "<bold>Off-the-books rentals</bold>\n\nSome properties are rented off the books, paid in dirty cash. No official contract — but the agency keeps a confidential file."
+  lavori:
+    title: "AfterLife — The Trades"
+    author: "Labour Office"
+    pages:
+      - "<bold>Electrician</bold>\n\nStart your shift (/elettricista turno). Accept reported faults, reach them with the compass, and repair with the wiring minigame."
+      - "<bold>Rider</bold>\n\n/rider turno, then /rider ordine. Pick up the food and deliver it hot: the tip depends on temperature. Don't stand still too long!"
+      - "<bold>Medic</bold>\n\nEMS has its own manual: use <yellow>/ems manuale</yellow>. In short: diagnose with the scanner, treat with the correct sequence of tools."
+      - "<bold>Nightclub</bold>\n\nThe bartender serves customers (/club vendi), mixes cocktails at the shaker, and manages orders in the club. The bouncer checks for weapons."
+  crimine:
+    title: "AfterLife — The Other Side"
+    author: "Anonymous"
+    pages:
+      - "<dark_red><bold>Nothing legal here.</bold></dark_red>\n\nStreet life pays in <white>dirty cash</white>: not bankable until laundered."
+      - "<bold>Dealing</bold>\n\nOut on the spots (/gang), customers pay little but fast. Careful: the police patrol and the dogs sniff."
+      - "<bold>Tricks of the trade</bold>\n\nA sealed bag beats a dog's nose. A circuit board can become something more… interesting, near an ATM."
+      - "<dark_gray>Every job leaves traces. Sooner or later, someone pays.</dark_gray>"

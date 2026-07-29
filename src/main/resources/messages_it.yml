@@ -20,6 +20,12 @@ nickname:
   invalid-content: "<red>Il nickname contiene caratteri non consentiti.</red>"
   usage: "<gray>Uso: <yellow>/setnick <testo|reset|off></yellow></gray>"
 
+language:
+  usage: "<gray>Uso: <yellow>/language <codice></yellow>. Disponibili: <white><langs></white></gray>"
+  current: "<gray>La tua lingua è <white><lang></white>. Disponibili: <white><langs></white>.</gray>"
+  set: "<green>Lingua impostata su <white><lang></white>.</green>"
+  invalid: "<red>Lingua sconosciuta. Disponibili: <white><langs></white>.</red>"
+
 health:
   header: "<gray>Stato di <white>AfterLifeRP</white>:</gray>"
   db-ok: "<green>Database: connesso (<latency>ms)</green>"

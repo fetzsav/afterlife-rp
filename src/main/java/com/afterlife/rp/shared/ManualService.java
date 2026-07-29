@@ -1,9 +1,12 @@
 package com.afterlife.rp.shared;
 
+import com.afterlife.rp.config.Messages;
 import java.io.File;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.TreeSet;
@@ -17,36 +20,59 @@ import org.bukkit.inventory.meta.BookMeta;
 import org.bukkit.plugin.java.JavaPlugin;
 
 /**
- * Data-driven in-game manuals (§9.8 manual, launch content). Books are defined
- * in manuals_it.yml so staff can edit titles, authors, and pages without code.
+ * Data-driven, localized in-game manuals (§9.8, launch content). Books are
+ * defined per language in manuals_&lt;code&gt;.yml so staff can edit titles,
+ * authors, and pages without code; unavailable languages fall back to the
+ * default.
  */
 public final class ManualService {
 
     private static final MiniMessage MINI = MiniMessage.miniMessage();
 
-    private final YamlConfiguration config;
+    private final Map<String, YamlConfiguration> byLanguage;
+    private final String defaultLanguage;
 
-    private ManualService(YamlConfiguration config) {
-        this.config = config;
+    private ManualService(Map<String, YamlConfiguration> byLanguage, String defaultLanguage) {
+        this.byLanguage = byLanguage;
+        this.defaultLanguage = defaultLanguage;
     }
 
-    public static ManualService load(JavaPlugin plugin) {
-        File file = new File(plugin.getDataFolder(), "manuals_it.yml");
-        if (!file.exists()) {
-            plugin.saveResource("manuals_it.yml", false);
+    public static ManualService load(JavaPlugin plugin, Messages messages) {
+        Map<String, YamlConfiguration> byLanguage = new HashMap<>();
+        for (String lang : messages.languages()) {
+            String resource = "manuals_" + lang + ".yml";
+            File file = new File(plugin.getDataFolder(), resource);
+            if (!file.exists() && plugin.getResource(resource) != null) {
+                plugin.saveResource(resource, false);
+            }
+            if (file.exists()) {
+                byLanguage.put(lang, YamlConfiguration.loadConfiguration(file));
+            }
         }
-        return new ManualService(YamlConfiguration.loadConfiguration(file));
+        return new ManualService(byLanguage, messages.defaultLanguage());
+    }
+
+    private YamlConfiguration configFor(String language) {
+        YamlConfiguration config = byLanguage.get(language);
+        return config != null ? config : byLanguage.get(defaultLanguage);
     }
 
     public Set<String> topics() {
-        ConfigurationSection manuals = config.getConfigurationSection("manuals");
+        ConfigurationSection manuals = configFor(defaultLanguage) == null
+                ? null : configFor(defaultLanguage).getConfigurationSection("manuals");
         return manuals == null ? Set.of() : new TreeSet<>(manuals.getKeys(false));
     }
 
-    /** Builds the written book for a topic, or empty when the topic is unknown. */
-    public Optional<ItemStack> book(String topic) {
-        ConfigurationSection section = config.getConfigurationSection(
-                "manuals." + topic.toLowerCase(Locale.ROOT));
+    /** Builds the written book for a topic in a language, empty when unknown. */
+    public Optional<ItemStack> book(String topic, String language) {
+        YamlConfiguration config = configFor(language);
+        ConfigurationSection section = config == null ? null
+                : config.getConfigurationSection("manuals." + topic.toLowerCase(Locale.ROOT));
+        if (section == null && config != configFor(defaultLanguage)) {
+            config = configFor(defaultLanguage);
+            section = config == null ? null
+                    : config.getConfigurationSection("manuals." + topic.toLowerCase(Locale.ROOT));
+        }
         if (section == null) {
             return Optional.empty();
         }

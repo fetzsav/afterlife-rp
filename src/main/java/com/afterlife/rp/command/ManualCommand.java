@@ -36,7 +36,7 @@ public final class ManualCommand implements CommandExecutor, TabCompleter {
             return true;
         }
         String topic = args[0].toLowerCase(Locale.ROOT);
-        manuals.book(topic).ifPresentOrElse(book -> {
+        manuals.book(topic, messages.languageFor(player)).ifPresentOrElse(book -> {
             player.getInventory().addItem(book).values().forEach(rest ->
                     player.getWorld().dropItemNaturally(player.getLocation(), rest));
             messages.send(player, "manual.given", Placeholder.unparsed("topic", topic));
