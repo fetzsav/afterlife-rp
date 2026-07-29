@@ -90,6 +90,11 @@ economy:
   entry: "<dark_gray> - </dark_gray><white><reason></white> <gray>(<txns> tx)</gray> <white><sign><amount></white>"
   summary: "<gray>Creato: <green><created></green> — Distrutto: <red><destroyed></red></gray>"
 
+manual:
+  list-header: "<gray>Manuali disponibili: <white><topics></white>. Usa <yellow>/manuale <argomento></yellow>.</gray>"
+  given: "<green>Ti è stato consegnato il manuale: <white><topic></white>.</green>"
+  unknown: "<red>Manuale sconosciuto. Disponibili: <white><topics></white>.</red>"
+
 org:
   created: "<green>Organizzazione <white><name></white> creata. IBAN tesoreria: <white><iban></white></green>"
   usage: "<gray>Uso: <yellow>/afterlife setup org create <tipo> <nome> [nome visibile]</yellow></gray>"

@@ -1,0 +1,49 @@
+# In-game player manuals (written books), Italian. Staff can edit freely:
+# each entry is title + author + a list of pages. Pages support MiniMessage.
+# Manuals explain systems and RP procedures; command hints are kept light.
+manuals:
+  benvenuto:
+    title: "AfterLife — Benvenuto"
+    author: "Città di AfterLife"
+    pages:
+      - "<bold>Benvenuto ad AfterLife</bold>\n\nUna città dove ogni mestiere, legale o meno, dipende dagli altri.\n\nHai un <white>ID permanente</white> (/id) e un conto in banca."
+      - "I <white>lavori</white> disponibili:\nbanca, avvocato, polizia, elettricista, rider, medico, agente immobiliare, barista, e la <dark_red>criminalità</dark_red>.\n\nLeggi i manuali dedicati con <yellow>/manuale <argomento></yellow>."
+      - "<white>Regole d'oro:</white>\n- Il denaro pulito è digitale.\n- Il denaro sporco è fisico e va riciclato.\n- Ogni oggetto di valore è tracciato: le copie non valgono.\n\nBuona permanenza."
+  banca:
+    title: "AfterLife — La Banca"
+    author: "Banca di AfterLife"
+    pages:
+      - "<bold>La Banca</bold>\n\nOgni cittadino ha un <white>IBAN</white>. Controlla saldo e stato con <yellow>/iban</yellow>."
+      - "Al <white>bancomat</white> (/atm) puoi:\n- prelevare contanti\n- depositare banconote\n- vedere gli ultimi movimenti\n\nTi serve una <white>carta</white> valida: chiedila a un banchiere."
+      - "<white>Trasferimenti</white>: /bonifico verso un IBAN o un giocatore.\n<white>Assegni</white>: /assegno per pagare qualcuno; si incassa con /incassa.\n\nUn conto congelato non può prelevare né trasferire."
+  legge:
+    title: "AfterLife — Legge e Ordine"
+    author: "Tribunale di AfterLife"
+    pages:
+      - "<bold>Contratti</bold>\n\nScrivi un accordo su un libro, poi <yellow>/contratto proponi</yellow>. L'altra parte firma con <yellow>/contratto firma</yellow>. Un avvocato lo valida."
+      - "<bold>Fedina penale</bold>\n\nI reati restano registrati. Un avvocato può ripulire una fedina idonea (solo reati minori scontati) con una pratica a pagamento."
+      - "<bold>Fermo e ricorso</bold>\n\nSe sei fermato, puoi chiamare un avvocato (/avvocato). Un ricorso è accolto solo se il fermo ha superato la durata massima consentita."
+      - "<bold>Polizia</bold>\n\nUna perquisizione richiede consenso, mandato o urgenza. Puoi acconsentire con /acconsenti. Ogni controllo viene registrato."
+  immobili:
+    title: "AfterLife — Immobili"
+    author: "Agenzia Immobiliare"
+    pages:
+      - "<bold>Comprare casa</bold>\n\nVedi gli immobili in vendita con <yellow>/luoghidisponibili</yellow>. Un agente conclude la vendita e ti consegna una <white>chiave</white>."
+      - "<bold>Chiavi e serrature</bold>\n\nOgni casa ha una serratura. Se viene cambiata, tutte le chiavi vecchie smettono di funzionare. Controlla la tua con /chiave."
+      - "<bold>Affitti in nero</bold>\n\nEsistono immobili affittati in nero, pagati in contanti sporchi. Nessun contratto ufficiale — ma l'agenzia conserva un file riservato."
+  lavori:
+    title: "AfterLife — I Mestieri"
+    author: "Ufficio del Lavoro"
+    pages:
+      - "<bold>Elettricista</bold>\n\nInizia il turno (/elettricista turno). Accetta i guasti segnalati, raggiungili con la bussola e ripara con il minigioco del cablaggio."
+      - "<bold>Rider</bold>\n\n/rider turno, poi /rider ordine. Ritira il cibo e consegnalo caldo: la mancia dipende dalla temperatura. Non fermarti troppo a lungo!"
+      - "<bold>Medico</bold>\n\nIl pronto soccorso ha un manuale dedicato: usa <yellow>/ems manuale</yellow>. In breve: diagnostica con lo scanner, cura con la sequenza giusta di strumenti."
+      - "<bold>Nightclub</bold>\n\nIl barista serve ai clienti (/club vendi), prepara cocktail allo shaker, e gestisce l'ordine nel locale. Il buttafuori controlla le armi."
+  crimine:
+    title: "AfterLife — L'Altra Faccia"
+    author: "Anonimo"
+    pages:
+      - "<dark_red><bold>Nulla di legale qui.</bold></dark_red>\n\nLa vita di strada paga in <white>contanti sporchi</white>: non depositabili finché non riciclati."
+      - "<bold>Spaccio</bold>\n\nIn giro per le piazze (/gang), i clienti pagano poco ma in fretta. Attento: la polizia pattuglia e i cani fiutano."
+      - "<bold>Trucchi del mestiere</bold>\n\nUn sacchetto sigillato inganna il fiuto dei cani. Una scheda a circuito può diventare qualcosa di più… interessante, vicino a un bancomat."
+      - "<dark_gray>Ogni colpo lascia tracce. Prima o poi, qualcuno paga.</dark_gray>"

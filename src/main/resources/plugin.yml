@@ -119,6 +119,10 @@ commands:
   gang:
     description: Gang crime operations
     usage: /gang <turno|fine|vendi|sigilla|apri|costruisci|hackera>
+  manuale:
+    description: Get an in-game manual book
+    usage: /manuale [topic]
+    aliases: [manual]
 permissions:
   afterlife.admin:
     description: Administrative diagnostics

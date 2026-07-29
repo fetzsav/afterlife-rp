@@ -3,7 +3,9 @@ package com.afterlife.rp;
 import com.afterlife.rp.audit.AuditService;
 import com.afterlife.rp.command.AfterLifeCommand;
 import com.afterlife.rp.command.IdCommand;
+import com.afterlife.rp.command.ManualCommand;
 import com.afterlife.rp.command.SetNickCommand;
+import com.afterlife.rp.shared.ManualService;
 import com.afterlife.rp.config.ConfigValidationException;
 import com.afterlife.rp.config.CoreConfig;
 import com.afterlife.rp.config.DatabaseSettings;
@@ -509,6 +511,11 @@ public final class AfterLifeRPPlugin extends JavaPlugin {
         Objects.requireNonNull(getCommand("id")).setExecutor(new IdCommand(identityService, messages));
         Objects.requireNonNull(getCommand("setnick")).setExecutor(new SetNickCommand(
                 databaseManager, identityService, nametagService, auditService, coreConfig, messages));
+        ManualService manualService = ManualService.load(this);
+        ManualCommand manualCommand = new ManualCommand(manualService, messages);
+        PluginCommand manualPluginCommand = Objects.requireNonNull(getCommand("manuale"));
+        manualPluginCommand.setExecutor(manualCommand);
+        manualPluginCommand.setTabCompleter(manualCommand);
 
         NightclubService nightclubServiceFinal = nightclubService;
 
