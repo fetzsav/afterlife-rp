@@ -20,6 +20,8 @@ import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
+import org.bukkit.command.TabCompleter;
+import com.afterlife.rp.command.TabComplete;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -31,7 +33,7 @@ import org.jetbrains.annotations.NotNull;
  * /contratto, /valida_contratto, /fedina, /pulisci_fedina, /arresto,
  * /rilascio, /avvocato, /ricorso, /prova, /licenza.
  */
-public final class LegalCommands implements CommandExecutor {
+public final class LegalCommands implements CommandExecutor, TabCompleter {
 
     private static final String PERM_LAWYER = "afterlife.legal.lawyer";
     private static final String PERM_POLICE = "afterlife.police.officer";
@@ -445,4 +447,42 @@ public final class LegalCommands implements CommandExecutor {
             }
         });
     }
+
+    @Override
+    public java.util.List<String> onTabComplete(@org.jetbrains.annotations.NotNull CommandSender sender,
+            @org.jetbrains.annotations.NotNull Command command,
+            @org.jetbrains.annotations.NotNull String alias, String @org.jetbrains.annotations.NotNull [] args) {
+        String cmd = command.getName().toLowerCase(java.util.Locale.ROOT);
+        switch (cmd) {
+            case "contratto" -> {
+                if (args.length == 1) {
+                    return TabComplete.filter(java.util.List.of("proponi", "firma"), args[0]);
+                }
+                if (args.length == 2 && args[0].equalsIgnoreCase("proponi")) {
+                    return TabComplete.players(args[1]);
+                }
+            }
+            case "fedina" -> {
+                if (args.length == 1) {
+                    return TabComplete.filter(java.util.List.of("aggiungi", "sconta"), args[0]);
+                }
+                if (args.length == 2 && args[0].equalsIgnoreCase("aggiungi")) {
+                    return TabComplete.players(args[1]);
+                }
+            }
+            case "pulisci_fedina", "arresto", "rilascio", "ricorso" -> {
+                if (args.length == 1) {
+                    return TabComplete.players(args[0]);
+                }
+            }
+            case "prova" -> {
+                if (args.length == 1) {
+                    return TabComplete.filter(java.util.List.of("crea", "vedi"), args[0]);
+                }
+            }
+            default -> { }
+        }
+        return java.util.List.of();
+    }
+
 }

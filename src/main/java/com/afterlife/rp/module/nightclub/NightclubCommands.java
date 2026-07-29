@@ -30,6 +30,8 @@ import org.bukkit.Material;
 import org.bukkit.Particle;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
+import org.bukkit.command.TabCompleter;
+import com.afterlife.rp.command.TabComplete;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -38,7 +40,7 @@ import org.bukkit.scheduler.BukkitTask;
 import org.jetbrains.annotations.NotNull;
 
 /** /club <vendi|conferma|rifiuta|shaker|scanner|blacklist|dj|escrow|taglia|staff|prezzi|rifornisci|happyhour|magazzino> (§9.11). */
-public final class NightclubCommands implements CommandExecutor {
+public final class NightclubCommands implements CommandExecutor, TabCompleter {
 
     private static final String PERM_BARTENDER = "afterlife.nightclub.bartender";
     private static final String PERM_SECURITY = "afterlife.nightclub.security";
@@ -704,4 +706,42 @@ public final class NightclubCommands implements CommandExecutor {
             return fallback;
         }
     }
+
+    @Override
+    public java.util.List<String> onTabComplete(@org.jetbrains.annotations.NotNull CommandSender sender,
+            @org.jetbrains.annotations.NotNull Command command,
+            @org.jetbrains.annotations.NotNull String alias, String @org.jetbrains.annotations.NotNull [] args) {
+        if (args.length == 1) {
+            return TabComplete.filter(java.util.List.of("vendi", "conferma", "rifiuta", "shaker",
+                    "scanner", "blacklist", "dj", "escrow", "taglia", "staff", "prezzi",
+                    "rifornisci", "happyhour", "magazzino"), args[0]);
+        }
+        if (args.length == 2) {
+            switch (args[0].toLowerCase(java.util.Locale.ROOT)) {
+                case "vendi", "scanner" -> {
+                    return TabComplete.players(args[1]);
+                }
+                case "blacklist" -> {
+                    return TabComplete.filter(java.util.List.of("add", "remove"), args[1]);
+                }
+                case "escrow" -> {
+                    return TabComplete.filter(java.util.List.of("crea", "deposita", "paga", "blocca",
+                            "conferma", "annulla"), args[1]);
+                }
+                case "taglia" -> {
+                    return TabComplete.filter(java.util.List.of("crea", "lista", "paga"), args[1]);
+                }
+                case "staff" -> {
+                    return TabComplete.filter(java.util.List.of("assumi", "licenzia"), args[1]);
+                }
+                case "prezzi", "rifornisci" -> {
+                    return TabComplete.filter(java.util.List.of("vodka_redbull", "absinthe",
+                            "tequila_boom", "lemonade"), args[1]);
+                }
+                default -> { }
+            }
+        }
+        return java.util.List.of();
+    }
+
 }

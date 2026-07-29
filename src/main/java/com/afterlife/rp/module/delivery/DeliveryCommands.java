@@ -20,13 +20,15 @@ import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder;
 import org.bukkit.Material;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
+import org.bukkit.command.TabCompleter;
+import com.afterlife.rp.command.TabComplete;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 
 /** /rider <turno|fine|ordine|ritira|consegna|accetta_pacco> (§9.6). */
-public final class DeliveryCommands implements CommandExecutor {
+public final class DeliveryCommands implements CommandExecutor, TabCompleter {
 
     private static final String PERMISSION = "afterlife.delivery.driver";
 
@@ -275,4 +277,16 @@ public final class DeliveryCommands implements CommandExecutor {
         player.getInventory().addItem(stack).values().forEach(rest ->
                 player.getWorld().dropItemNaturally(player.getLocation(), rest));
     }
+
+    @Override
+    public java.util.List<String> onTabComplete(@org.jetbrains.annotations.NotNull CommandSender sender,
+            @org.jetbrains.annotations.NotNull Command command,
+            @org.jetbrains.annotations.NotNull String alias, String @org.jetbrains.annotations.NotNull [] args) {
+        if (args.length == 1) {
+            return TabComplete.filter(java.util.List.of("turno", "fine", "ordine", "ritira",
+                    "consegna", "accetta_pacco"), args[0]);
+        }
+        return java.util.List.of();
+    }
+
 }

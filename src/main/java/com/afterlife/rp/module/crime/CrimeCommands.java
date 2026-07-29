@@ -14,13 +14,15 @@ import java.util.Locale;
 import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
+import org.bukkit.command.TabCompleter;
+import com.afterlife.rp.command.TabComplete;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 
 /** /gang <turno|fine|vendi|sigilla|apri|hackera> (§9.4). */
-public final class CrimeCommands implements CommandExecutor {
+public final class CrimeCommands implements CommandExecutor, TabCompleter {
 
     private static final String PERM_GANG = "afterlife.crime.gang";
 
@@ -235,4 +237,16 @@ public final class CrimeCommands implements CommandExecutor {
         player.getInventory().addItem(stack).values().forEach(rest ->
                 player.getWorld().dropItemNaturally(player.getLocation(), rest));
     }
+
+    @Override
+    public java.util.List<String> onTabComplete(@org.jetbrains.annotations.NotNull CommandSender sender,
+            @org.jetbrains.annotations.NotNull Command command,
+            @org.jetbrains.annotations.NotNull String alias, String @org.jetbrains.annotations.NotNull [] args) {
+        if (args.length == 1) {
+            return TabComplete.filter(java.util.List.of("turno", "fine", "vendi", "sigilla",
+                    "apri", "costruisci", "hackera"), args[0]);
+        }
+        return java.util.List.of();
+    }
+
 }

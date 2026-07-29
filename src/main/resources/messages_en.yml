@@ -107,7 +107,7 @@ org:
   usage: "<gray>Usage: <yellow>/afterlife setup org create <type> <name> [display name]</yellow></gray>"
 
 legal:
-  contract-usage: "<gray>Usage: <yellow>/contratto <proponi <player>|firma></yellow></gray>"
+  contract-usage: "<gray>Hold a written book, then <yellow>/contratto proponi <player></yellow>. The other player runs <yellow>/contratto firma</yellow>.</gray>"
   contract-hold-book: "<red>Hold the book with the contract text.</red>"
   contract-content-invalid: "<red>Contract content is empty or too long.</red>"
   contract-proposed: "<green>Contract proposed to <white><player></white>. They must use <yellow>/contratto firma</yellow>.</green>"
@@ -141,7 +141,7 @@ legal:
   ricorso-usage: "<gray>Usage: <yellow>/ricorso <player></yellow></gray>"
   appeal-ok: "<green>Appeal upheld: detention over the limit. <white><player></white> released.</green>"
   appeal-rejected: "<red>Appeal rejected: no verifiable procedural violation.</red>"
-  prova-usage: "<gray>Usage: <yellow>/prova <crea <description>|vedi <id>></yellow></gray>"
+  prova-usage: "<gray>Evidence: <yellow>/prova crea <description></yellow> (holding an item) · <yellow>/prova vedi <id></yellow></gray>"
   evidence-created: "<green>Evidence #<id> recorded with chain of custody.</green>"
   evidence-view: "<gray>Evidence #<id>: <white><description></white> <dark_gray>[<status>]</dark_gray></gray>"
   evidence-not-found: "<red>Evidence not found.</red>"
@@ -155,7 +155,7 @@ legal:
 estate:
   list-header: "<gray>Properties (<count>):</gray>"
   list-entry: "<dark_gray> - </dark_gray><white><name></white> <gray>(<type>)</gray> <green><price></green> <dark_gray><world> <x>,<z></dark_gray>"
-  agenzia-usage: "<gray>Usage: <yellow>/agenzia <vendi <property> <player>|affittasporco <property> <player>|distruggi_file></yellow></gray>"
+  agenzia-usage: "<gray>Agency: <yellow>/agenzia vendi <property> <player></yellow> · <yellow>/agenzia affittasporco <property> <player></yellow> · <yellow>/agenzia distruggi_file</yellow></gray>"
   sold: "<green><name> sold to <white><player></white>.</green>"
   bought: "<green>You bought <white><name></white>. Here is your key.</green>"
   not-available: "<red>This property is not available.</red>"
@@ -178,7 +178,7 @@ estate:
   power-alert: "<red>⚡ Abnormal power draw detected: <white><name></white> (<district>). No utility contract is active.</red>"
 
 electrician:
-  usage: "<gray>Usage: <yellow>/elettricista <turno|fine|chiamate|accetta <poi>|ripara></yellow></gray>"
+  usage: "<gray>Electrician subcommands: <white>turno · fine · chiamate · accetta <poi> · ripara</white></gray>"
   duty-on: "<green>Electrician shift started.</green>"
   duty-off: "<yellow>Shift ended.</yellow>"
   duty-already: "<yellow>You are already on shift.</yellow>"
@@ -199,7 +199,7 @@ electrician:
   dispatch-broadcast: "<yellow>⚡ Fault reported: <white><name></white> (<type>). Use <white>/elettricista chiamate</white>.</yellow>"
 
 delivery:
-  usage: "<gray>Usage: <yellow>/rider <turno|fine|ordine|ritira|consegna|accetta_pacco></yellow></gray>"
+  usage: "<gray>Rider subcommands: <white>turno · fine · ordine · ritira · consegna · accetta_pacco</white></gray>"
   duty-on: "<green>Rider shift started. Use <white>/rider ordine</white> for a job.</green>"
   duty-off: "<yellow>Shift ended.</yellow>"
   duty-already: "<yellow>You are already on shift.</yellow>"
@@ -219,7 +219,7 @@ delivery:
   contraband-delivered: "<dark_red>The package vanishes. You are left with <white><amount></white> in dirty notes.</dark_red>"
 
 ems:
-  usage: "<gray>Usage: <yellow>/ems <turno|fine|scan|cura|produci|traccia|certificato|manuale|emergenza|cura_npc|estrai|converti></yellow></gray>"
+  usage: "<gray>EMS subcommands: <white>turno · fine · scan · cura · produci · traccia · certificato · manuale · emergenza · cura_npc · estrai · converti</white></gray>"
   duty-on: "<green>Medic shift started.</green>"
   duty-off: "<yellow>Shift ended.</yellow>"
   duty-already: "<yellow>You are already on shift.</yellow>"
@@ -263,7 +263,7 @@ ems:
   wage-paid: "<green>Hourly wage credited: <white><amount></white>.</green>"
 
 club:
-  usage: "<gray>Usage: <yellow>/club <vendi|conferma|rifiuta|shaker|scanner|blacklist|dj|escrow|taglia|staff|prezzi|rifornisci|happyhour|magazzino></yellow></gray>"
+  usage: "<gray>Nightclub subcommands: <white>vendi · conferma · rifiuta · shaker · scanner · blacklist · dj · escrow · taglia · staff · prezzi · rifornisci · happyhour · magazzino</white>. Example: <yellow>/club vendi <customer> vodka_redbull:2</yellow></gray>"
   vendi-usage: "<gray>Usage: <yellow>/club vendi <customer> <product[:qty]...></yellow></gray>"
   pos-required: "<red>You must be at a registered POS terminal.</red>"
   customer-too-far: "<red>The customer must be within 5 blocks.</red>"
@@ -285,7 +285,7 @@ club:
   scanner-usage: "<gray>Usage: <yellow>/club scanner <player></yellow></gray>"
   scan-clean: "<green><player> is clean.</green>"
   scan-weapons: "<red>⚠ <player> is carrying: <white><items></white></red>"
-  blacklist-usage: "<gray>Usage: <yellow>/club blacklist <add <player> <reason>|remove <player>></yellow></gray>"
+  blacklist-usage: "<gray>Blacklist: <yellow>/club blacklist add <player> <reason></yellow> · <yellow>/club blacklist remove <player></yellow></gray>"
   blacklist-added: "<red><player> added to the blacklist.</red>"
   blacklist-already: "<yellow><player> is already blacklisted.</yellow>"
   blacklist-removed: "<green><player> removed from the blacklist.</green>"
@@ -295,7 +295,7 @@ club:
   dj-required: "<red>You must be at the DJ booth.</red>"
   dj-cooldown: "<yellow>The lights need a break.</yellow>"
   dj-started: "<light_purple>♪ Lights and smoke on!</light_purple>"
-  escrow-usage: "<gray>Usage: <yellow>/club escrow <crea <A> <B> <euro>|deposita|paga|blocca|conferma|annulla></yellow></gray>"
+  escrow-usage: "<gray>Escrow: <yellow>/club escrow crea <A> <B> <euro></yellow>, then deposita · paga · blocca · conferma · annulla</gray>"
   escrow-created: "<green>Escrow created. The parties can deposit.</green>"
   escrow-party-a: "<gold>Deposit the goods with <white>/club escrow deposita</white>, then <white>/club escrow blocca</white>.</gold>"
   escrow-party-b: "<gold>Pay <white><amount></white> in dirty money with <white>/club escrow paga</white>, then <white>/club escrow blocca</white>.</gold>"
@@ -309,14 +309,14 @@ club:
   escrow-completed: "<green>Swap completed: the safes have emptied.</green>"
   escrow-not-locked: "<red>Both parties must lock their deposits first.</red>"
   escrow-cancelled: "<yellow>Escrow cancelled: deposits return to their owners.</yellow>"
-  taglia-usage: "<gray>Usage: <yellow>/club taglia <crea <target> <euro>|lista|paga <id> <player>></yellow></gray>"
+  taglia-usage: "<gray>Bounty: <yellow>/club taglia crea <target> <euro></yellow> · <yellow>/club taglia lista</yellow> · <yellow>/club taglia paga <id> <player></yellow></gray>"
   taglia-created: "<dark_red>Bounty registered. The sponsor stays anonymous.</dark_red>"
   taglia-failed: "<red>Bounty not created: below the minimum or insufficient funds.</red>"
   taglia-header: "<gray>Open bounties (<count>):</gray>"
   taglia-entry: "<dark_gray> - #<id> </dark_gray><white><target></white> <dark_red><amount></dark_red>"
   taglia-paid: "<green>Bounty paid out.</green>"
   taglia-not-open: "<red>Bounty does not exist or is already closed.</red>"
-  staff-usage: "<gray>Usage: <yellow>/club staff <assumi <player> <role> [comm%]|licenzia <player>></yellow></gray>"
+  staff-usage: "<gray>Staff: <yellow>/club staff assumi <player> <role> [comm%]</yellow> · <yellow>/club staff licenzia <player></yellow></gray>"
   staff-hired: "<green><player> hired.</green>"
   staff-fired: "<yellow><player> fired.</yellow>"
   prezzi-usage: "<gray>Usage: <yellow>/club prezzi <product> <euro></yellow></gray>"
@@ -330,7 +330,7 @@ club:
   stock-entry: "<dark_gray> - </dark_gray><white><product></white> <gray>x<stock></gray> <green><price></green>"
 
 police:
-  usage: "<gray>Usage: <yellow>/polizia <mandato|perquisisci|sequestra|controlloconto|allerte|rispondi></yellow></gray>"
+  usage: "<gray>Police subcommands: <white>mandato · perquisisci · sequestra · controlloconto · allerte · rispondi</white></gray>"
   mandato-usage: "<gray>Usage: <yellow>/polizia mandato <SEARCH|ARREST> <player> [reason]</yellow></gray>"
   warrant-issued: "<green>Warrant <white><type></white> issued against <white><player></white>.</green>"
   perquisisci-usage: "<gray>Usage: <yellow>/polizia perquisisci <player> <CONSENT|WARRANT|EXIGENT></yellow></gray>"
@@ -350,7 +350,7 @@ police:
   rispondi-usage: "<gray>Usage: <yellow>/polizia rispondi <id></yellow></gray>"
   alert-responded: "<green>Alert taken.</green>"
   alert-not-open: "<yellow>Alert does not exist or is already handled.</yellow>"
-  k9-usage: "<gray>Usage: <yellow>/k9 <turno|fine|schiera|fiuta <player>></yellow></gray>"
+  k9-usage: "<gray>K-9 subcommands: <white>turno · fine · schiera · fiuta <player></white></gray>"
   k9-duty-on: "<green>K-9 unit on duty.</green>"
   k9-duty-off: "<yellow>K-9 unit off duty.</yellow>"
   k9-duty-already: "<yellow>You are already on K-9 duty.</yellow>"
@@ -362,7 +362,7 @@ police:
   k9-indication: "<red>🐕 The K-9 signals on <white><player></white>: <white><types></white>.</red>"
 
 crime:
-  usage: "<gray>Usage: <yellow>/gang <turno|fine|vendi|sigilla|apri|costruisci|hackera></yellow></gray>"
+  usage: "<gray>Gang subcommands: <white>turno · fine · vendi · sigilla · apri · costruisci · hackera</white></gray>"
   duty-on: "<dark_green>You're out on business.</dark_green>"
   duty-off: "<yellow>Done for the day.</yellow>"
   duty-already: "<yellow>You're already out.</yellow>"

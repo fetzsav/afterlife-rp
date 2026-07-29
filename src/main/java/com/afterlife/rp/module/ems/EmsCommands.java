@@ -17,6 +17,8 @@ import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
+import org.bukkit.command.TabCompleter;
+import com.afterlife.rp.command.TabComplete;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -27,7 +29,7 @@ import org.jetbrains.annotations.NotNull;
  * /ems <turno|fine|scan|cura|produci|traccia|certificato|manuale|emergenza|
  * cura_npc|estrai|converti> (§9.8). Alias /medico.
  */
-public final class EmsCommands implements CommandExecutor {
+public final class EmsCommands implements CommandExecutor, TabCompleter {
 
     private static final String PERMISSION = "afterlife.ems.medic";
 
@@ -413,4 +415,27 @@ public final class EmsCommands implements CommandExecutor {
         player.getInventory().addItem(stack).values().forEach(rest ->
                 player.getWorld().dropItemNaturally(player.getLocation(), rest));
     }
+
+    @Override
+    public java.util.List<String> onTabComplete(@org.jetbrains.annotations.NotNull CommandSender sender,
+            @org.jetbrains.annotations.NotNull Command command,
+            @org.jetbrains.annotations.NotNull String alias, String @org.jetbrains.annotations.NotNull [] args) {
+        if (args.length == 1) {
+            return TabComplete.filter(java.util.List.of("turno", "fine", "scan", "cura", "produci",
+                    "traccia", "certificato", "manuale", "emergenza", "cura_npc", "estrai",
+                    "converti"), args[0]);
+        }
+        if (args.length == 2) {
+            String sub = args[0].toLowerCase(java.util.Locale.ROOT);
+            if (sub.equals("scan") || sub.equals("cura") || sub.equals("certificato")) {
+                return TabComplete.players(args[1]);
+            }
+            if (sub.equals("produci")) {
+                return TabComplete.filter(java.util.List.of("bandage", "splint", "medkit",
+                        "adrenaline"), args[1]);
+            }
+        }
+        return java.util.List.of();
+    }
+
 }

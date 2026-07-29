@@ -208,6 +208,7 @@ public final class AfterLifeRPPlugin extends JavaPlugin {
             for (String name : List.of("iban", "atm", "bonifico", "assegno", "incassa",
                     "banchiere", "sequestro")) {
                 Objects.requireNonNull(getCommand(name)).setExecutor(bankingCommands);
+                getCommand(name).setTabCompleter(bankingCommands);
             }
             getServer().getPluginManager().registerEvents(new BankingListener(
                     databaseManager, accountService, pendingDeliveryService, itemService,
@@ -228,6 +229,7 @@ public final class AfterLifeRPPlugin extends JavaPlugin {
                         "pulisci_fedina", "arresto", "rilascio", "avvocato", "ricorso",
                         "prova", "licenza")) {
                     Objects.requireNonNull(getCommand(name)).setExecutor(legalCommands);
+                    getCommand(name).setTabCompleter(legalCommands);
                 }
             } else {
                 getLogger().info("Legal module disabled in modules/legal.yml");
@@ -252,6 +254,7 @@ public final class AfterLifeRPPlugin extends JavaPlugin {
                     for (String name : List.of("luoghidisponibili", "luoghisporchi", "agenzia",
                             "cambia_serratura", "cassaforte", "chiave")) {
                         Objects.requireNonNull(getCommand(name)).setExecutor(realEstateCommands);
+                        getCommand(name).setTabCompleter(realEstateCommands);
                     }
                     RealEstateService finalService = realEstateService;
                     long periodTicks = 20L * 60 * realEstateConfig.powerCheckMinutes();
@@ -306,9 +309,11 @@ public final class AfterLifeRPPlugin extends JavaPlugin {
                         missionService, poiService, accountService, ledgerService,
                         itemRepository, auditService, electricianConfig);
                 missionService.registerHandler("ELECTRICIAN_", electricianService);
-                Objects.requireNonNull(getCommand("elettricista")).setExecutor(
-                        new ElectricianCommands(databaseManager, electricianService, missionService,
-                                jobSessionService, accountService, itemService, guiManager, messages));
+                ElectricianCommands electricianCommands = new ElectricianCommands(databaseManager,
+                        electricianService, missionService, jobSessionService, accountService,
+                        itemService, guiManager, messages);
+                Objects.requireNonNull(getCommand("elettricista")).setExecutor(electricianCommands);
+                getCommand("elettricista").setTabCompleter(electricianCommands);
                 long dispatchTicks = 20L * 60 * electricianConfig.dispatchIntervalMinutes();
                 Bukkit.getScheduler().runTaskTimerAsynchronously(this, () -> {
                     if (!databaseManager.ready()) {
@@ -344,9 +349,11 @@ public final class AfterLifeRPPlugin extends JavaPlugin {
                             bankingService, itemRepository, auditService, deliveryConfig);
                     missionService.registerHandler("FOOD_", deliveryService);
                     missionService.registerHandler("CONTRABAND_", deliveryService);
-                    Objects.requireNonNull(getCommand("rider")).setExecutor(
-                            new DeliveryCommands(databaseManager, deliveryService, missionService,
-                                    jobSessionService, accountService, itemService, messages));
+                    DeliveryCommands deliveryCommands = new DeliveryCommands(databaseManager,
+                            deliveryService, missionService, jobSessionService, accountService,
+                            itemService, messages);
+                    Objects.requireNonNull(getCommand("rider")).setExecutor(deliveryCommands);
+                    getCommand("rider").setTabCompleter(deliveryCommands);
                     getServer().getPluginManager().registerEvents(new DeliveryListener(
                             databaseManager, missionService, itemService), this);
                 } else {
@@ -370,9 +377,11 @@ public final class AfterLifeRPPlugin extends JavaPlugin {
                     nightclubService = new NightclubService(databaseManager, accountService,
                             ledgerService, bankingService, itemRepository, itemService,
                             pendingDeliveryService, auditService, nightclubConfig);
-                    Objects.requireNonNull(getCommand("club")).setExecutor(new NightclubCommands(
+                    NightclubCommands nightclubCommands = new NightclubCommands(
                             this, databaseManager, nightclubService, accountService, itemService,
-                            poiService, guiManager, messages));
+                            poiService, guiManager, messages);
+                    Objects.requireNonNull(getCommand("club")).setExecutor(nightclubCommands);
+                    getCommand("club").setTabCompleter(nightclubCommands);
                     getServer().getPluginManager().registerEvents(new NightclubListener(
                             this, databaseManager, nightclubService, itemService,
                             integrationManager.worldGuard(), messages), this);
@@ -415,9 +424,11 @@ public final class AfterLifeRPPlugin extends JavaPlugin {
                         runtimeRef.cleanupEmergency(mission);
                     }
                 });
-                Objects.requireNonNull(getCommand("ems")).setExecutor(new EmsCommands(
+                EmsCommands emsCommands = new EmsCommands(
                         databaseManager, emsService, emsRuntime, emsListener, jobSessionService,
-                        accountService, itemService, poiService, messages));
+                        accountService, itemService, poiService, messages);
+                Objects.requireNonNull(getCommand("ems")).setExecutor(emsCommands);
+                getCommand("ems").setTabCompleter(emsCommands);
                 emsRuntime.start();
                 // Hourly wage for on-duty medics from the government budget (§9.8).
                 Bukkit.getScheduler().runTaskTimer(this, () -> {
@@ -457,12 +468,13 @@ public final class AfterLifeRPPlugin extends JavaPlugin {
                     k9Runtime = new K9Runtime(this, policeConfig, jobSessionService, itemService,
                             messages);
                     k9Runtime.start();
-                    Objects.requireNonNull(getCommand("polizia")).setExecutor(new PoliceCommands(
+                    PoliceCommands policeCommands = new PoliceCommands(
                             databaseManager, policeService, k9Runtime, jobSessionService,
-                            itemService, messages));
-                    var policeCommands = getCommand("polizia").getExecutor();
-                    Objects.requireNonNull(getCommand("k9")).setExecutor(policeCommands);
-                    Objects.requireNonNull(getCommand("acconsenti")).setExecutor(policeCommands);
+                            itemService, messages);
+                    for (String name : List.of("polizia", "k9", "acconsenti")) {
+                        Objects.requireNonNull(getCommand(name)).setExecutor(policeCommands);
+                        getCommand(name).setTabCompleter(policeCommands);
+                    }
                 } else {
                     getLogger().info("Police module disabled in modules/police.yml");
                 }
@@ -489,9 +501,11 @@ public final class AfterLifeRPPlugin extends JavaPlugin {
                     getServer().getPluginManager().registerEvents(new CrimeListener(
                             this, databaseManager, crimeService, crimeRuntime, itemService,
                             messages), this);
-                    Objects.requireNonNull(getCommand("gang")).setExecutor(new CrimeCommands(
+                    CrimeCommands crimeCommands = new CrimeCommands(
                             databaseManager, crimeService, crimeRuntime, policeService,
-                            jobSessionService, itemService, poiService, messages));
+                            jobSessionService, itemService, poiService, messages);
+                    Objects.requireNonNull(getCommand("gang")).setExecutor(crimeCommands);
+                    getCommand("gang").setTabCompleter(crimeCommands);
                     crimeRuntime.start();
                 } else {
                     getLogger().info("Crime module disabled in modules/crime.yml");

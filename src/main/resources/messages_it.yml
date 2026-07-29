@@ -106,7 +106,7 @@ org:
   usage: "<gray>Uso: <yellow>/afterlife setup org create <tipo> <nome> [nome visibile]</yellow></gray>"
 
 legal:
-  contract-usage: "<gray>Uso: <yellow>/contratto <proponi <giocatore>|firma></yellow></gray>"
+  contract-usage: "<gray>Tieni in mano un libro scritto, poi <yellow>/contratto proponi <giocatore></yellow>. L'altro giocatore usa <yellow>/contratto firma</yellow>.</gray>"
   contract-hold-book: "<red>Tieni in mano il libro con il testo del contratto.</red>"
   contract-content-invalid: "<red>Contenuto del contratto vuoto o troppo lungo.</red>"
   contract-proposed: "<green>Contratto proposto a <white><player></white>. Deve usare <yellow>/contratto firma</yellow>.</green>"
@@ -140,7 +140,7 @@ legal:
   ricorso-usage: "<gray>Uso: <yellow>/ricorso <giocatore></yellow></gray>"
   appeal-ok: "<green>Ricorso accolto: detenzione oltre il limite. <white><player></white> rilasciato.</green>"
   appeal-rejected: "<red>Ricorso respinto: nessuna violazione procedurale verificabile.</red>"
-  prova-usage: "<gray>Uso: <yellow>/prova <crea <descrizione>|vedi <id>></yellow></gray>"
+  prova-usage: "<gray>Prove: <yellow>/prova crea <descrizione></yellow> (tenendo un oggetto) · <yellow>/prova vedi <id></yellow></gray>"
   evidence-created: "<green>Prova #<id> registrata con catena di custodia.</green>"
   evidence-view: "<gray>Prova #<id>: <white><description></white> <dark_gray>[<status>]</dark_gray></gray>"
   evidence-not-found: "<red>Prova non trovata.</red>"
@@ -154,7 +154,7 @@ legal:
 estate:
   list-header: "<gray>Immobili (<count>):</gray>"
   list-entry: "<dark_gray> - </dark_gray><white><name></white> <gray>(<type>)</gray> <green><price></green> <dark_gray><world> <x>,<z></dark_gray>"
-  agenzia-usage: "<gray>Uso: <yellow>/agenzia <vendi <immobile> <giocatore>|affittasporco <immobile> <giocatore>|distruggi_file></yellow></gray>"
+  agenzia-usage: "<gray>Agenzia: <yellow>/agenzia vendi <immobile> <giocatore></yellow> · <yellow>/agenzia affittasporco <immobile> <giocatore></yellow> · <yellow>/agenzia distruggi_file</yellow></gray>"
   sold: "<green><name> venduto a <white><player></white>.</green>"
   bought: "<green>Hai acquistato <white><name></white>. Ecco la tua chiave.</green>"
   not-available: "<red>Questo immobile non è disponibile.</red>"
@@ -177,7 +177,7 @@ estate:
   power-alert: "<red>⚡ Consumo elettrico anomalo rilevato: <white><name></white> (<district>). Nessun contratto di fornitura risulta attivo.</red>"
 
 electrician:
-  usage: "<gray>Uso: <yellow>/elettricista <turno|fine|chiamate|accetta <poi>|ripara></yellow></gray>"
+  usage: "<gray>Sottocomandi elettricista: <white>turno · fine · chiamate · accetta <poi> · ripara</white></gray>"
   duty-on: "<green>Turno da elettricista iniziato.</green>"
   duty-off: "<yellow>Turno terminato.</yellow>"
   duty-already: "<yellow>Sei già in turno.</yellow>"
@@ -198,7 +198,7 @@ electrician:
   dispatch-broadcast: "<yellow>⚡ Guasto segnalato: <white><name></white> (<type>). Usa <white>/elettricista chiamate</white>.</yellow>"
 
 delivery:
-  usage: "<gray>Uso: <yellow>/rider <turno|fine|ordine|ritira|consegna|accetta_pacco></yellow></gray>"
+  usage: "<gray>Sottocomandi rider: <white>turno · fine · ordine · ritira · consegna · accetta_pacco</white></gray>"
   duty-on: "<green>Turno da rider iniziato. Usa <white>/rider ordine</white> per un incarico.</green>"
   duty-off: "<yellow>Turno terminato.</yellow>"
   duty-already: "<yellow>Sei già in turno.</yellow>"
@@ -218,7 +218,7 @@ delivery:
   contraband-delivered: "<dark_red>Il pacco sparisce. Ti restano <white><amount></white> in banconote sporche.</dark_red>"
 
 ems:
-  usage: "<gray>Uso: <yellow>/ems <turno|fine|scan|cura|produci|traccia|certificato|manuale|emergenza|cura_npc|estrai|converti></yellow></gray>"
+  usage: "<gray>Sottocomandi EMS: <white>turno · fine · scan · cura · produci · traccia · certificato · manuale · emergenza · cura_npc · estrai · converti</white></gray>"
   duty-on: "<green>Turno da medico iniziato.</green>"
   duty-off: "<yellow>Turno terminato.</yellow>"
   duty-already: "<yellow>Sei già in turno.</yellow>"
@@ -262,7 +262,7 @@ ems:
   wage-paid: "<green>Stipendio orario accreditato: <white><amount></white>.</green>"
 
 club:
-  usage: "<gray>Uso: <yellow>/club <vendi|conferma|rifiuta|shaker|scanner|blacklist|dj|escrow|taglia|staff|prezzi|rifornisci|happyhour|magazzino></yellow></gray>"
+  usage: "<gray>Sottocomandi nightclub: <white>vendi · conferma · rifiuta · shaker · scanner · blacklist · dj · escrow · taglia · staff · prezzi · rifornisci · happyhour · magazzino</white>. Esempio: <yellow>/club vendi <cliente> vodka_redbull:2</yellow></gray>"
   vendi-usage: "<gray>Uso: <yellow>/club vendi <cliente> <prodotto[:qty]...></yellow></gray>"
   pos-required: "<red>Devi trovarti a una cassa POS registrata.</red>"
   customer-too-far: "<red>Il cliente deve essere entro 5 blocchi.</red>"
@@ -284,7 +284,7 @@ club:
   scanner-usage: "<gray>Uso: <yellow>/club scanner <giocatore></yellow></gray>"
   scan-clean: "<green><player> è pulito.</green>"
   scan-weapons: "<red>⚠ <player> porta: <white><items></white></red>"
-  blacklist-usage: "<gray>Uso: <yellow>/club blacklist <add <giocatore> <motivo>|remove <giocatore>></yellow></gray>"
+  blacklist-usage: "<gray>Blacklist: <yellow>/club blacklist add <giocatore> <motivo></yellow> · <yellow>/club blacklist remove <giocatore></yellow></gray>"
   blacklist-added: "<red><player> inserito in blacklist.</red>"
   blacklist-already: "<yellow><player> è già in blacklist.</yellow>"
   blacklist-removed: "<green><player> rimosso dalla blacklist.</green>"
@@ -294,7 +294,7 @@ club:
   dj-required: "<red>Devi trovarti alla console DJ.</red>"
   dj-cooldown: "<yellow>Le luci hanno bisogno di una pausa.</yellow>"
   dj-started: "<light_purple>♪ Luci e fumo attivi!</light_purple>"
-  escrow-usage: "<gray>Uso: <yellow>/club escrow <crea <A> <B> <euro>|deposita|paga|blocca|conferma|annulla></yellow></gray>"
+  escrow-usage: "<gray>Escrow: <yellow>/club escrow crea <A> <B> <euro></yellow>, poi deposita · paga · blocca · conferma · annulla</gray>"
   escrow-created: "<green>Escrow creato. Le parti possono depositare.</green>"
   escrow-party-a: "<gold>Deposita gli oggetti con <white>/club escrow deposita</white>, poi <white>/club escrow blocca</white>.</gold>"
   escrow-party-b: "<gold>Paga <white><amount></white> in denaro sporco con <white>/club escrow paga</white>, poi <white>/club escrow blocca</white>.</gold>"
@@ -308,14 +308,14 @@ club:
   escrow-completed: "<green>Scambio completato: le casseforti si sono svuotate.</green>"
   escrow-not-locked: "<red>Entrambe le parti devono prima bloccare i depositi.</red>"
   escrow-cancelled: "<yellow>Escrow annullato: i depositi tornano ai proprietari.</yellow>"
-  taglia-usage: "<gray>Uso: <yellow>/club taglia <crea <bersaglio> <euro>|lista|paga <id> <giocatore>></yellow></gray>"
+  taglia-usage: "<gray>Taglia: <yellow>/club taglia crea <bersaglio> <euro></yellow> · <yellow>/club taglia lista</yellow> · <yellow>/club taglia paga <id> <giocatore></yellow></gray>"
   taglia-created: "<dark_red>Taglia registrata. Il committente resterà anonimo.</dark_red>"
   taglia-failed: "<red>Taglia non creata: importo minimo o fondi insufficienti.</red>"
   taglia-header: "<gray>Taglie aperte (<count>):</gray>"
   taglia-entry: "<dark_gray> - #<id> </dark_gray><white><target></white> <dark_red><amount></dark_red>"
   taglia-paid: "<green>Taglia liquidata.</green>"
   taglia-not-open: "<red>Taglia inesistente o già chiusa.</red>"
-  staff-usage: "<gray>Uso: <yellow>/club staff <assumi <giocatore> <ruolo> [comm%]|licenzia <giocatore>></yellow></gray>"
+  staff-usage: "<gray>Staff: <yellow>/club staff assumi <giocatore> <ruolo> [comm%]</yellow> · <yellow>/club staff licenzia <giocatore></yellow></gray>"
   staff-hired: "<green><player> assunto.</green>"
   staff-fired: "<yellow><player> licenziato.</yellow>"
   prezzi-usage: "<gray>Uso: <yellow>/club prezzi <prodotto> <euro></yellow></gray>"
@@ -329,7 +329,7 @@ club:
   stock-entry: "<dark_gray> - </dark_gray><white><product></white> <gray>x<stock></gray> <green><price></green>"
 
 police:
-  usage: "<gray>Uso: <yellow>/polizia <mandato|perquisisci|sequestra|controlloconto|allerte|rispondi></yellow></gray>"
+  usage: "<gray>Sottocomandi polizia: <white>mandato · perquisisci · sequestra · controlloconto · allerte · rispondi</white></gray>"
   mandato-usage: "<gray>Uso: <yellow>/polizia mandato <SEARCH|ARREST> <giocatore> [motivo]</yellow></gray>"
   warrant-issued: "<green>Mandato <white><type></white> emesso contro <white><player></white>.</green>"
   perquisisci-usage: "<gray>Uso: <yellow>/polizia perquisisci <giocatore> <CONSENT|WARRANT|EXIGENT></yellow></gray>"
@@ -349,7 +349,7 @@ police:
   rispondi-usage: "<gray>Uso: <yellow>/polizia rispondi <id></yellow></gray>"
   alert-responded: "<green>Allerta presa in carico.</green>"
   alert-not-open: "<yellow>Allerta inesistente o già gestita.</yellow>"
-  k9-usage: "<gray>Uso: <yellow>/k9 <turno|fine|schiera|fiuta <giocatore>></yellow></gray>"
+  k9-usage: "<gray>Sottocomandi K-9: <white>turno · fine · schiera · fiuta <giocatore></white></gray>"
   k9-duty-on: "<green>Unità K-9 in servizio.</green>"
   k9-duty-off: "<yellow>Unità K-9 a riposo.</yellow>"
   k9-duty-already: "<yellow>Sei già in servizio K-9.</yellow>"
@@ -361,7 +361,7 @@ police:
   k9-indication: "<red>🐕 Il K-9 segnala su <white><player></white>: <white><types></white>.</red>"
 
 crime:
-  usage: "<gray>Uso: <yellow>/gang <turno|fine|vendi|sigilla|apri|costruisci|hackera></yellow></gray>"
+  usage: "<gray>Sottocomandi gang: <white>turno · fine · vendi · sigilla · apri · costruisci · hackera</white></gray>"
   duty-on: "<dark_green>Sei in giro per affari.</dark_green>"
   duty-off: "<yellow>Fine dei giri.</yellow>"
   duty-already: "<yellow>Sei già in giro.</yellow>"

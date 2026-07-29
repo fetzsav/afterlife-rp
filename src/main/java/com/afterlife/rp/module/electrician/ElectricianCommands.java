@@ -24,13 +24,15 @@ import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder;
 import org.bukkit.Material;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
+import org.bukkit.command.TabCompleter;
+import com.afterlife.rp.command.TabComplete;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 
 /** /elettricista <turno|fine|chiamate|accetta <poi>|ripara> (§9.5). */
-public final class ElectricianCommands implements CommandExecutor {
+public final class ElectricianCommands implements CommandExecutor, TabCompleter {
 
     private static final String PERMISSION = "afterlife.electrician.worker";
     private static final List<Integer> MINIGAME_SLOTS = List.of(10, 12, 14, 16, 28, 30, 32, 34);
@@ -255,4 +257,16 @@ public final class ElectricianCommands implements CommandExecutor {
                     }
                 }));
     }
+
+    @Override
+    public java.util.List<String> onTabComplete(@org.jetbrains.annotations.NotNull CommandSender sender,
+            @org.jetbrains.annotations.NotNull Command command,
+            @org.jetbrains.annotations.NotNull String alias, String @org.jetbrains.annotations.NotNull [] args) {
+        if (args.length == 1) {
+            return TabComplete.filter(java.util.List.of("turno", "fine", "chiamate", "accetta",
+                    "ripara"), args[0]);
+        }
+        return java.util.List.of();
+    }
+
 }

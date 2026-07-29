@@ -15,6 +15,8 @@ import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
+import org.bukkit.command.TabCompleter;
+import com.afterlife.rp.command.TabComplete;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
@@ -23,7 +25,7 @@ import org.jetbrains.annotations.NotNull;
  * /polizia and /k9 (§9.3): mandato, perquisisci, consenso, sequestra,
  * controlloconto, allerte, rispondi; K-9 turno/schiera/fiuta.
  */
-public final class PoliceCommands implements CommandExecutor {
+public final class PoliceCommands implements CommandExecutor, TabCompleter {
 
     private static final String PERM_OFFICER = "afterlife.police.officer";
     private static final String PERM_K9 = "afterlife.police.k9";
@@ -289,4 +291,49 @@ public final class PoliceCommands implements CommandExecutor {
         }
         return true;
     }
+
+    @Override
+    public java.util.List<String> onTabComplete(@org.jetbrains.annotations.NotNull CommandSender sender,
+            @org.jetbrains.annotations.NotNull Command command,
+            @org.jetbrains.annotations.NotNull String alias, String @org.jetbrains.annotations.NotNull [] args) {
+        String cmd = command.getName().toLowerCase(java.util.Locale.ROOT);
+        switch (cmd) {
+            case "polizia" -> {
+                if (args.length == 1) {
+                    return TabComplete.filter(java.util.List.of("mandato", "perquisisci", "sequestra",
+                            "controlloconto", "allerte", "rispondi"), args[0]);
+                }
+                if (args.length == 2) {
+                    String sub = args[0].toLowerCase(java.util.Locale.ROOT);
+                    if (sub.equals("mandato")) {
+                        return TabComplete.filter(java.util.List.of("SEARCH", "ARREST"), args[1]);
+                    }
+                    if (sub.equals("perquisisci") || sub.equals("controlloconto")) {
+                        return TabComplete.players(args[1]);
+                    }
+                }
+                if (args.length == 3 && args[0].equalsIgnoreCase("perquisisci")) {
+                    return TabComplete.filter(java.util.List.of("CONSENT", "WARRANT", "EXIGENT"),
+                            args[2]);
+                }
+            }
+            case "k9" -> {
+                if (args.length == 1) {
+                    return TabComplete.filter(java.util.List.of("turno", "fine", "schiera", "fiuta"),
+                            args[0]);
+                }
+                if (args.length == 2 && args[0].equalsIgnoreCase("fiuta")) {
+                    return TabComplete.players(args[1]);
+                }
+            }
+            case "acconsenti" -> {
+                if (args.length == 1) {
+                    return TabComplete.players(args[0]);
+                }
+            }
+            default -> { }
+        }
+        return java.util.List.of();
+    }
+
 }

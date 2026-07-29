@@ -16,6 +16,8 @@ import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
+import org.bukkit.command.TabCompleter;
+import com.afterlife.rp.command.TabComplete;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -26,7 +28,7 @@ import org.jetbrains.annotations.NotNull;
  * /incassa, /banchiere, /sequestro. Each validates sender, permission,
  * arguments, and state (rule 14).
  */
-public final class BankingCommands implements CommandExecutor {
+public final class BankingCommands implements CommandExecutor, TabCompleter {
 
     private static final String PERM_USER = "afterlife.bank.user";
     private static final String PERM_BANKER = "afterlife.bank.banker";
@@ -336,4 +338,42 @@ public final class BankingCommands implements CommandExecutor {
                         Placeholder.unparsed("player", target.getName()),
                         Placeholder.unparsed("reason", reason))));
     }
+
+    @Override
+    public java.util.List<String> onTabComplete(@org.jetbrains.annotations.NotNull CommandSender sender,
+            @org.jetbrains.annotations.NotNull Command command,
+            @org.jetbrains.annotations.NotNull String alias, String @org.jetbrains.annotations.NotNull [] args) {
+        String cmd = command.getName().toLowerCase(java.util.Locale.ROOT);
+        switch (cmd) {
+            case "bonifico", "assegno" -> {
+                if (args.length == 1) {
+                    return TabComplete.players(args[0]);
+                }
+            }
+            case "atm" -> {
+                if (args.length == 1) {
+                    return TabComplete.filter(java.util.List.of("preleva"), args[0]);
+                }
+            }
+            case "banchiere" -> {
+                if (args.length == 1) {
+                    return TabComplete.filter(java.util.List.of("apri", "carta", "revoca"), args[0]);
+                }
+                if (args.length == 2) {
+                    return TabComplete.players(args[1]);
+                }
+            }
+            case "sequestro" -> {
+                if (args.length == 1) {
+                    return TabComplete.players(args[0]);
+                }
+                if (args.length == 2) {
+                    return TabComplete.filter(java.util.List.of("congela", "scongela"), args[1]);
+                }
+            }
+            default -> { }
+        }
+        return java.util.List.of();
+    }
+
 }

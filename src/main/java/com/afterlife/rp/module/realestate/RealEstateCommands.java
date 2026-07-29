@@ -23,6 +23,8 @@ import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
+import org.bukkit.command.TabCompleter;
+import com.afterlife.rp.command.TabComplete;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -32,7 +34,7 @@ import org.jetbrains.annotations.NotNull;
  * Real-estate commands (§9.7): /luoghidisponibili, /luoghisporchi, /agenzia,
  * /cambia_serratura, /cassaforte, /chiave.
  */
-public final class RealEstateCommands implements CommandExecutor {
+public final class RealEstateCommands implements CommandExecutor, TabCompleter {
 
     private static final String PERM_AGENT = "afterlife.realestate.agent";
     private static final String PERM_DIRECTOR = "afterlife.realestate.director";
@@ -335,4 +337,25 @@ public final class RealEstateCommands implements CommandExecutor {
             }
         }
     }
+
+    @Override
+    public java.util.List<String> onTabComplete(@org.jetbrains.annotations.NotNull CommandSender sender,
+            @org.jetbrains.annotations.NotNull Command command,
+            @org.jetbrains.annotations.NotNull String alias, String @org.jetbrains.annotations.NotNull [] args) {
+        String cmd = command.getName().toLowerCase(java.util.Locale.ROOT);
+        if (cmd.equals("agenzia")) {
+            if (args.length == 1) {
+                return TabComplete.filter(java.util.List.of("vendi", "affittasporco",
+                        "distruggi_file"), args[0]);
+            }
+            if (args.length == 3 && (args[0].equalsIgnoreCase("vendi")
+                    || args[0].equalsIgnoreCase("affittasporco"))) {
+                return TabComplete.players(args[2]);
+            }
+        } else if (cmd.equals("cassaforte") && args.length == 1) {
+            return TabComplete.filter(java.util.List.of("preleva"), args[0]);
+        }
+        return java.util.List.of();
+    }
+
 }
