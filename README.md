@@ -25,11 +25,19 @@ On first boot the plugin generates `plugins/AfterLifeRP/config.yml` (set the
 database credentials there) and `plugins/AfterLifeRP/secret.key` (HMAC key —
 never commit either; rule 12).
 
+## Setting up a city
+
+`docs/setup-guide.md` walks an empty server to a playable city. In game the
+plugin guides itself: `/afterlife setup status` lists every module, what it
+still needs, and the command that fixes each gap; `/afterlife setup export city`
+snapshots the result so it can be rebuilt with `import`.
+
 ## Commands (by module)
 
 | Area | Commands |
 |---|---|
-| Core | `/afterlife <version\|health\|reconcile\|setup poi/org/license/property\|debug>`, `/id`, `/setnick` |
+| Core | `/afterlife <version\|health\|reconcile\|economy\|debug>`, `/id`, `/setnick`, `/language`, `/manuale` |
+| Setup | `/afterlife setup` (menu), `setup status` (readiness checklist), `setup poi/property/org/license`, `setup export\|import` |
 | Banking | `/iban`, `/atm` (`/banca`), `/bonifico`, `/assegno`, `/incassa`, `/banchiere`, `/sequestro` |
 | Legal | `/contratto`, `/valida_contratto`, `/fedina`, `/pulisci_fedina`, `/arresto`, `/rilascio`, `/avvocato`, `/ricorso`, `/prova`, `/licenza` |
 | Real estate | `/luoghidisponibili`, `/luoghisporchi`, `/agenzia`, `/cambia_serratura`, `/cassaforte`, `/chiave` |

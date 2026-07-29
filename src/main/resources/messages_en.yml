@@ -48,6 +48,87 @@ poi:
   report-saved: "<green>Setup report saved to <white><file></white>.</green>"
   usage: "<gray>Usage: <yellow>/afterlife setup poi <create|remove|list|report></yellow></gray>"
 
+setup:
+  menu-header: "<gray>AfterLife setup — click a command to put it in your chat box:</gray>"
+  menu-entry: "<dark_gray> - </dark_gray><white><label></white>\n<dark_gray>   </dark_gray><yellow><command></yellow>"
+  menu-footer: "<gray>Start with <yellow>/afterlife setup status</yellow>: it lists what is still missing and the command that fixes each gap.</gray>"
+  menu:
+    status: "Readiness checklist for every module"
+    poi: "Register a point of interest where you stand (ATM, restaurant, POS, ...)"
+    poi-list: "List the registered points of interest"
+    property: "Register a property for sale where you stand"
+    org: "Create an organization with its own treasury and IBAN"
+    license: "Grant or revoke a professional licence"
+    export: "Export POIs, properties, and organizations to a blueprint file"
+    import: "Preview or apply a blueprint file on this server"
+  click-hint: "<gray>Click to put this command in your chat box</gray>"
+  status-header: "<gray>Setup status — <white><ready>/<total></white> active modules playable</gray>"
+  module-ready: "<green>+ <module></green>"
+  module-incomplete: "<yellow>> <module></yellow>"
+  module-disabled: "<dark_gray>o <module> — disabled in <detail></dark_gray>"
+  module-error: "<red>x <module> — config error: <detail></red>"
+  module-blocked: "<dark_gray>o <module> — inactive, needs: <detail></dark_gray>"
+  check-ok: "<dark_gray>   </dark_gray><green>+</green> <gray><label></gray> <dark_gray><detail></dark_gray>"
+  check-missing: "<dark_gray>   </dark_gray><red>x</red> <white><label></white> <dark_gray><detail></dark_gray>\n<dark_gray>     </dark_gray><yellow><command></yellow>"
+  check-optional: "<dark_gray>   </dark_gray><yellow>-</yellow> <gray><label> (optional)</gray> <dark_gray><detail></dark_gray> <yellow><command></yellow>"
+  check-unknown: "<dark_gray>   </dark_gray><gray>?</gray> <gray><label></gray> <dark_gray><detail> — cannot be verified</dark_gray>"
+  all-ready: "<green>Every active module has what it needs. Export the result with <white>/afterlife setup export city</white> so it can be rebuilt.</green>"
+  next-step: "<gray>Next step (<count> left): <white><label></white></gray>\n<dark_gray>  </dark_gray><yellow><command></yellow>"
+  module:
+    banking: "Banking"
+    legal: "Law & justice"
+    realestate: "Real estate"
+    electrician: "Electrician"
+    delivery: "Food delivery"
+    ems: "EMS / hospital"
+    nightclub: "Nightclub"
+    police: "Police"
+    crime: "Crime"
+  requirement:
+    banking:
+      atm: "ATMs / bank terminals"
+      staff: "Bank staff permissions"
+      vault: "VaultUnlocked bridge for other plugins"
+    legal:
+      lawyer: "Lawyer permissions"
+    realestate:
+      property: "Properties on the market"
+      staff: "Agency permissions"
+    electrician:
+      poi: "Repairable installations"
+      worker: "Electrician permissions"
+    delivery:
+      restaurant: "Restaurants to pick up from"
+      destination: "Delivery addresses"
+      shadow: "Shadow drops for contraband runs"
+      driver: "Rider permissions"
+    ems:
+      workstation: "Hospital workstations"
+      emergency: "Emergency spawn points"
+      toxic: "Toxic barrels"
+      medic: "Medic permissions"
+    nightclub:
+      pos: "POS terminals at the bar"
+      shaker: "Shaker stations"
+      dj: "DJ booth"
+      club-region: "WorldGuard region for the club"
+      vip-region: "WorldGuard region for the VIP area"
+      staff: "Club staff permissions"
+    police:
+      officer: "Police permissions"
+    crime:
+      sale-zone: "Street sale zones"
+      atm: "ATMs that can be hacked"
+      gang: "Gang permissions"
+  export-ok: "<green>Blueprint saved: <white><file></white> — <pois> POI, <properties> properties, <organizations> organizations.</green>"
+  export-failed: "<red>Export failed: <detail></red>"
+  import-usage: "<gray>Usage: <yellow>/afterlife setup import <name> [apply]</yellow>. Without <white>apply</white> it only previews.</gray>"
+  import-preview: "<gray>Preview: <white><created></white> to create, <white><skipped></white> already present, <white><failed></white> unusable.</gray>"
+  import-applied: "<green>Blueprint applied: <created> created, <skipped> skipped, <failed> failed.</green>"
+  import-confirm: "<gray>Apply it with:</gray> <yellow><command></yellow>"
+  import-entry-failed: "<red>Cannot import <kind> <white><name></white>: <detail></red>"
+  import-failed: "<red>Import failed: <detail></red>"
+
 debug:
   item-issued: "<green>Serialized item issued: <white><type></white> <dark_gray>serial <serial></dark_gray></green>"
   item-usage: "<gray>Usage: <yellow>/afterlife debug item <type> [denomination]</yellow></gray>"

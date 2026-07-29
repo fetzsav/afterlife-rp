@@ -1,5 +1,8 @@
 # Admin & Operations Setup
 
+Building a city from scratch is a separate, ordered walkthrough:
+**`docs/setup-guide.md`**. This file is the operations reference.
+
 ## Database (production)
 
 MariaDB runs in Docker beside the game container (`docker-compose.dev.yml`).
@@ -24,6 +27,8 @@ copies off-box.
 
 | Command | Purpose |
 |---|---|
+| `/afterlife setup` | Menu of everything setup can do (click to fill in) |
+| `/afterlife setup status` | Per-module readiness: what is missing + the fix command |
 | `/afterlife health` | DB + adapter status |
 | `/afterlife reconcile` | Ledger integrity check |
 | `/afterlife economy` | 24h source/sink report by reason |
@@ -31,8 +36,15 @@ copies off-box.
 | `/afterlife setup org create …` | Create an organization + treasury |
 | `/afterlife setup license grant\|revoke …` | Professional/government licences |
 | `/afterlife setup property create …` | Register a legal or dirty property |
+| `/afterlife setup export <name>` | Snapshot POIs/properties/orgs to a blueprint |
+| `/afterlife setup import <name> [apply]` | Preview (default) or replay a blueprint |
 | `/afterlife debug item <type> [denom]` | Issue a test serialized item |
 | `/afterlife debug dirtymoney <euro>` | Issue physical dirty money |
+
+`setup status` reads live state only — registered POIs, WorldGuard regions,
+LuckPerms group nodes, property count — so it is never out of date. It stays
+available while the database is down and marks what it cannot verify as unknown
+rather than missing. The same summary is logged on every boot.
 
 ## POI types to register per module
 
@@ -45,7 +57,18 @@ copies off-box.
 
 All POIs are stored in the database and survive restarts. Bind a WorldGuard
 region to a POI by passing its name as the last argument to
-`/afterlife setup poi create`.
+`/afterlife setup poi create`. `config.yml` `poi.types` is an allow-list that is
+unioned with whatever the enabled modules ask for, so a module can never need a
+type the command would reject.
+
+## Reproducing a city
+
+`/afterlife setup export <name>` writes `plugins/AfterLifeRP/setup/<name>.yml`
+containing every POI, property, and organization. `import` replays it on another
+server (or a wiped database) and skips anything that already exists, so re-runs
+are safe. Permissions, WorldGuard regions, player data, and the ledger are not
+in the blueprint — back those up with `/lp export`, WorldGuard's own storage,
+and `tools/backup.sh`.
 
 ## Module toggles
 

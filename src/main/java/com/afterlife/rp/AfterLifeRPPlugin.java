@@ -74,6 +74,10 @@ import com.afterlife.rp.shared.items.SerializedItemRepository;
 import com.afterlife.rp.shared.items.SerializedItemService;
 import com.afterlife.rp.shared.regions.PoiRepository;
 import com.afterlife.rp.shared.regions.PoiService;
+import com.afterlife.rp.setup.SetupBlueprintService;
+import com.afterlife.rp.setup.SetupRegistry;
+import com.afterlife.rp.setup.SetupRequirement;
+import com.afterlife.rp.setup.SetupStatusService;
 import java.time.Duration;
 import java.util.List;
 import java.util.Objects;
@@ -137,6 +141,10 @@ public final class AfterLifeRPPlugin extends JavaPlugin {
                 },
                 getLogger());
 
+        // What each module needs from the admin, recorded as modules come up so
+        // /afterlife setup status always describes the running server (§12).
+        SetupRegistry setupRegistry = new SetupRegistry();
+
         // Banking module config loads independently: an invalid file disables the
         // module loudly without taking the core down (rule 10, §11).
         BankingConfig bankingConfig = null;
@@ -147,12 +155,14 @@ public final class AfterLifeRPPlugin extends JavaPlugin {
                 bankingConfig = candidate;
             } else {
                 getLogger().info("Banking module disabled in modules/banking.yml");
+                setupRegistry.disabled("banking");
             }
         } catch (ConfigValidationException e) {
             for (String error : e.errors()) {
                 getLogger().severe("Banking config: " + error);
             }
             getLogger().severe("Banking module disabled until modules/banking.yml is fixed.");
+            setupRegistry.configError("banking", e.errors().isEmpty() ? "" : e.errors().get(0));
         }
 
         // All services are constructed up front; DB-touching calls are guarded by
@@ -213,6 +223,13 @@ public final class AfterLifeRPPlugin extends JavaPlugin {
             getServer().getPluginManager().registerEvents(new BankingListener(
                     databaseManager, accountService, pendingDeliveryService, itemService,
                     getLogger()), this);
+            setupRegistry.active("banking", SetupRegistry.requirements(
+                    bankingConfig.atmRequirePoi()
+                            ? SetupRequirement.poi("banking.atm", bankingConfig.atmPoiTypes(), 1)
+                            : null,
+                    SetupRequirement.permissions("banking.staff", "banker",
+                            "afterlife.bank.banker", "afterlife.bank.director"),
+                    SetupRequirement.plugin("banking.vault", "VaultUnlocked", true)));
         }
 
         // Legal module (M3).
@@ -231,12 +248,17 @@ public final class AfterLifeRPPlugin extends JavaPlugin {
                     Objects.requireNonNull(getCommand(name)).setExecutor(legalCommands);
                     getCommand(name).setTabCompleter(legalCommands);
                 }
+                setupRegistry.active("legal", SetupRegistry.requirements(
+                        SetupRequirement.permissions("legal.lawyer", "lawyer",
+                                "afterlife.legal.lawyer")));
             } else {
                 getLogger().info("Legal module disabled in modules/legal.yml");
+                setupRegistry.disabled("legal");
             }
         } catch (ConfigValidationException e) {
             e.errors().forEach(error -> getLogger().severe("Legal config: " + error));
             getLogger().severe("Legal module disabled until modules/legal.yml is fixed.");
+            setupRegistry.configError("legal", e.errors().isEmpty() ? "" : e.errors().get(0));
         }
 
         // Real-estate module (M3); requires banking for dirty-money issuance.
@@ -274,15 +296,22 @@ public final class AfterLifeRPPlugin extends JavaPlugin {
                                                                 .Placeholder.unparsed("district",
                                                                         alert.district()))))));
                     }, periodTicks, periodTicks);
+                    setupRegistry.active("realestate", SetupRegistry.requirements(
+                            SetupRequirement.property("realestate.property", 1),
+                            SetupRequirement.permissions("realestate.staff", "estateagent",
+                                    "afterlife.realestate.agent", "afterlife.realestate.director")));
                 } else {
                     getLogger().info("Real-estate module disabled in modules/realestate.yml");
+                    setupRegistry.disabled("realestate");
                 }
             } catch (ConfigValidationException e) {
                 e.errors().forEach(error -> getLogger().severe("Real-estate config: " + error));
                 getLogger().severe("Real-estate module disabled until modules/realestate.yml is fixed.");
+                setupRegistry.configError("realestate", e.errors().isEmpty() ? "" : e.errors().get(0));
             }
         } else {
             getLogger().info("Real-estate module inactive: it requires the banking module.");
+            setupRegistry.blocked("realestate", "banking");
         }
 
         // Shared mission framework (M5).
@@ -330,12 +359,18 @@ public final class AfterLifeRPPlugin extends JavaPlugin {
                                                     net.kyori.adventure.text.minimessage.tag.resolver
                                                             .Placeholder.unparsed("type", poi.type()))))));
                 }, dispatchTicks, dispatchTicks);
+                setupRegistry.active("electrician", SetupRegistry.requirements(
+                        SetupRequirement.poi("electrician.poi", electricianConfig.poiTypes(), 1),
+                        SetupRequirement.permissions("electrician.worker", "electrician",
+                                "afterlife.electrician.worker")));
             } else {
                 getLogger().info("Electrician module disabled in modules/electrician.yml");
+                setupRegistry.disabled("electrician");
             }
         } catch (ConfigValidationException e) {
             e.errors().forEach(error -> getLogger().severe("Electrician config: " + error));
             getLogger().severe("Electrician module disabled until modules/electrician.yml is fixed.");
+            setupRegistry.configError("electrician", e.errors().isEmpty() ? "" : e.errors().get(0));
         }
 
         // Delivery module (M5); requires banking for dirty-money payouts.
@@ -356,15 +391,27 @@ public final class AfterLifeRPPlugin extends JavaPlugin {
                     getCommand("rider").setTabCompleter(deliveryCommands);
                     getServer().getPluginManager().registerEvents(new DeliveryListener(
                             databaseManager, missionService, itemService), this);
+                    setupRegistry.active("delivery", SetupRegistry.requirements(
+                            SetupRequirement.poi("delivery.restaurant",
+                                    deliveryConfig.restaurantTypes(), 1),
+                            SetupRequirement.poi("delivery.destination",
+                                    deliveryConfig.destinationTypes(), 2),
+                            SetupRequirement.optionalPoi("delivery.shadow",
+                                    deliveryConfig.shadowTypes()),
+                            SetupRequirement.permissions("delivery.driver", "rider",
+                                    "afterlife.delivery.driver")));
                 } else {
                     getLogger().info("Delivery module disabled in modules/delivery.yml");
+                    setupRegistry.disabled("delivery");
                 }
             } catch (ConfigValidationException e) {
                 e.errors().forEach(error -> getLogger().severe("Delivery config: " + error));
                 getLogger().severe("Delivery module disabled until modules/delivery.yml is fixed.");
+                setupRegistry.configError("delivery", e.errors().isEmpty() ? "" : e.errors().get(0));
             }
         } else {
             getLogger().info("Delivery module inactive: it requires the banking module.");
+            setupRegistry.blocked("delivery", "banking");
         }
 
         // Nightclub module (M7); requires banking for dirty-money flows.
@@ -392,15 +439,32 @@ public final class AfterLifeRPPlugin extends JavaPlugin {
                             clubRef.expireStaleEscrows();
                         }
                     }, 20L * 60, 20L * 60);
+                    setupRegistry.active("nightclub", SetupRegistry.requirements(
+                            SetupRequirement.poi("nightclub.pos",
+                                    nightclubConfig.posPoiTypes(), 1),
+                            SetupRequirement.poi("nightclub.shaker",
+                                    nightclubConfig.shakerPoiTypes(), 1),
+                            SetupRequirement.optionalPoi("nightclub.dj",
+                                    nightclubConfig.djPoiTypes()),
+                            SetupRequirement.region("nightclub.club-region",
+                                    nightclubConfig.clubRegion()),
+                            SetupRequirement.region("nightclub.vip-region",
+                                    nightclubConfig.vipRegion()),
+                            SetupRequirement.permissions("nightclub.staff", "bartender",
+                                    "afterlife.nightclub.bartender", "afterlife.nightclub.security",
+                                    "afterlife.nightclub.manager")));
                 } else {
                     getLogger().info("Nightclub module disabled in modules/nightclub.yml");
+                    setupRegistry.disabled("nightclub");
                 }
             } catch (ConfigValidationException e) {
                 e.errors().forEach(error -> getLogger().severe("Nightclub config: " + error));
                 getLogger().severe("Nightclub module disabled until modules/nightclub.yml is fixed.");
+                setupRegistry.configError("nightclub", e.errors().isEmpty() ? "" : e.errors().get(0));
             }
         } else {
             getLogger().info("Nightclub module inactive: it requires the banking module.");
+            setupRegistry.blocked("nightclub", "banking");
         }
 
         // EMS module (M6).
@@ -448,12 +512,23 @@ public final class AfterLifeRPPlugin extends JavaPlugin {
                                                             emsConfig.wageHourlyCents())),
                                             false)));
                 }, 20L * 3600, 20L * 3600);
+                setupRegistry.active("ems", SetupRegistry.requirements(
+                        SetupRequirement.poi("ems.workstation",
+                                emsConfig.workstationPoiTypes(), 1),
+                        SetupRequirement.poi("ems.emergency",
+                                emsConfig.emergencyPoiTypes(), 1),
+                        SetupRequirement.optionalPoi("ems.toxic",
+                                emsConfig.toxicBarrelPoiTypes()),
+                        SetupRequirement.permissions("ems.medic", "medic",
+                                "afterlife.ems.medic")));
             } else {
                 getLogger().info("EMS module disabled in modules/ems.yml");
+                setupRegistry.disabled("ems");
             }
         } catch (ConfigValidationException e) {
             e.errors().forEach(error -> getLogger().severe("EMS config: " + error));
             getLogger().severe("EMS module disabled until modules/ems.yml is fixed.");
+            setupRegistry.configError("ems", e.errors().isEmpty() ? "" : e.errors().get(0));
         }
 
         // Police module (M8); needs the legal module for the evidence chain.
@@ -475,15 +550,21 @@ public final class AfterLifeRPPlugin extends JavaPlugin {
                         Objects.requireNonNull(getCommand(name)).setExecutor(policeCommands);
                         getCommand(name).setTabCompleter(policeCommands);
                     }
+                    setupRegistry.active("police", SetupRegistry.requirements(
+                            SetupRequirement.permissions("police.officer", "police",
+                                    "afterlife.police.officer", "afterlife.police.k9")));
                 } else {
                     getLogger().info("Police module disabled in modules/police.yml");
+                    setupRegistry.disabled("police");
                 }
             } catch (ConfigValidationException e) {
                 e.errors().forEach(error -> getLogger().severe("Police config: " + error));
                 getLogger().severe("Police module disabled until modules/police.yml is fixed.");
+                setupRegistry.configError("police", e.errors().isEmpty() ? "" : e.errors().get(0));
             }
         } else {
             getLogger().info("Police module inactive: it requires the legal module.");
+            setupRegistry.blocked("police", "legal");
         }
 
         // Crime module (M8); needs banking (dirty money) and police (alerts).
@@ -507,22 +588,63 @@ public final class AfterLifeRPPlugin extends JavaPlugin {
                     Objects.requireNonNull(getCommand("gang")).setExecutor(crimeCommands);
                     getCommand("gang").setTabCompleter(crimeCommands);
                     crimeRuntime.start();
+                    setupRegistry.active("crime", SetupRegistry.requirements(
+                            SetupRequirement.poi("crime.sale-zone",
+                                    crimeConfig.saleZonePoiTypes(), 1),
+                            SetupRequirement.poi("crime.atm", crimeConfig.atmPoiTypes(), 1),
+                            SetupRequirement.permissions("crime.gang", "gang",
+                                    "afterlife.crime.gang", "afterlife.crime.boss")));
                 } else {
                     getLogger().info("Crime module disabled in modules/crime.yml");
+                    setupRegistry.disabled("crime");
                 }
             } catch (ConfigValidationException e) {
                 e.errors().forEach(error -> getLogger().severe("Crime config: " + error));
                 getLogger().severe("Crime module disabled until modules/crime.yml is fixed.");
+                setupRegistry.configError("crime", e.errors().isEmpty() ? "" : e.errors().get(0));
             }
         } else {
             getLogger().info("Crime module inactive: it requires the banking and police modules.");
+            setupRegistry.blocked("crime", "banking, police");
         }
+
+        // The setup checklist reads live state only: registered POIs, WorldGuard
+        // regions, LuckPerms group nodes, and the property count.
+        SetupStatusService setupStatusService = new SetupStatusService(
+                setupRegistry,
+                type -> (int) poiService.all().stream()
+                        .filter(poi -> poi.type().equalsIgnoreCase(type)).count(),
+                (worldName, regionId) -> {
+                    var world = Bukkit.getWorld(worldName);
+                    return world != null && integrationManager.worldGuard() != null
+                            && integrationManager.worldGuard().regionExists(world, regionId);
+                },
+                pluginName -> getServer().getPluginManager().isPluginEnabled(pluginName),
+                () -> integrationManager.luckPerms() == null
+                        ? java.util.Optional.<java.util.Set<String>>empty()
+                        : integrationManager.luckPerms().grantedGroupNodes(),
+                () -> {
+                    if (!databaseManager.ready()) {
+                        return java.util.concurrent.CompletableFuture.failedFuture(
+                                new IllegalStateException("database unavailable"));
+                    }
+                    return databaseManager.db().supply(connection -> {
+                        try (var statement = connection.prepareStatement(
+                                "SELECT COUNT(*) FROM properties");
+                                var rows = statement.executeQuery()) {
+                            return rows.next() ? rows.getInt(1) : 0;
+                        }
+                    });
+                });
+        SetupBlueprintService setupBlueprintService = new SetupBlueprintService(
+                databaseManager, poiService, realEstateService, accountService,
+                getDataFolder().toPath().resolve("setup"));
 
         AfterLifeCommand afterLifeCommand = new AfterLifeCommand(
                 this, databaseManager, integrationManager, poiService,
                 itemService, coreConfig, messages, reconciliationService,
                 accountService, bankingService, legalService, realEstateService,
-                economyReportService);
+                economyReportService, setupRegistry, setupStatusService, setupBlueprintService);
         PluginCommand rootCommand = Objects.requireNonNull(getCommand("afterlife"));
         rootCommand.setExecutor(afterLifeCommand);
         rootCommand.setTabCompleter(afterLifeCommand);
@@ -569,6 +691,10 @@ public final class AfterLifeRPPlugin extends JavaPlugin {
             });
         }, 20L * 360, 20L * 86400);
 
+        // Captured on the main thread: the boot summary below runs asynchronously.
+        String mainWorld = Bukkit.getWorlds().isEmpty()
+                ? "world" : Bukkit.getWorlds().get(0).getName();
+
         databaseManager.start().thenAccept(state -> {
             if (state != DatabaseManager.State.READY) {
                 getLogger().severe("Database unavailable — joins are blocked with a maintenance "
@@ -588,6 +714,14 @@ public final class AfterLifeRPPlugin extends JavaPlugin {
                     getLogger().log(Level.SEVERE, "POI load failed", error);
                 } else {
                     getLogger().info("Loaded " + count + " POI(s) from the database");
+                    // Tell the console what is still missing before players arrive (§12).
+                    setupStatusService.evaluate(mainWorld).thenAccept(report -> {
+                        int steps = report.blocking().size();
+                        getLogger().info("Setup: " + report.readyModules() + "/"
+                                + report.activeModules() + " active modules playable"
+                                + (steps == 0 ? "" : ", " + steps + " step(s) left")
+                                + " — run /afterlife setup status in game.");
+                    });
                 }
             });
             // Restart recovery (rule 13): expire overdue missions, close stale duty.

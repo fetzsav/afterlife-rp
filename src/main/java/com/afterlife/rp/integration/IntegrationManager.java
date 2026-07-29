@@ -37,15 +37,15 @@ public final class IntegrationManager {
         worldGuard = add(logger, WorldGuardAdapter::new);
         add(logger, () -> new PlaceholderApiAdapter(plugin, identityService));
         add(logger, () -> new PresenceAdapter("Vault",
-                "ponte economia attivo dal Milestone 2",
-                "installa Vault: richiesto dal Milestone 2 (economia)",
+                "economy bridge active",
+                "install VaultUnlocked so other plugins can read AfterLife balances",
                 "VaultUnlocked"));
         add(logger, () -> new PresenceAdapter("Citizens",
-                "NPC disponibili per i moduli futuri",
-                "installa Citizens: richiesto dai moduli con NPC (Milestone 5+)"));
+                "NPCs available to job modules",
+                "install Citizens for NPC-driven jobs"));
         add(logger, () -> new PresenceAdapter("ProtocolLib",
-                "disponibile per visuali packet-only",
-                "opzionale: visuali packet-only e sign virtuali"));
+                "available for packet-only visuals",
+                "optional: packet-only visuals and virtual signs"));
         customItems = add(logger, CraftEngineAdapter::new);
         for (Adapter adapter : adapters) {
             logger.info("Integration " + adapter.name() + ": "

@@ -46,7 +46,10 @@ custom-items:
   receipt: "afterlife:receipt"
 
 poi:
-  # Allowed POI types for /afterlife setup poi create. Extend as modules arrive.
+  # Allowed POI types for /afterlife setup poi create. Any type an enabled module
+  # asks for in modules/<name>.yml is accepted too, so this list can only widen
+  # what is registerable — it can never block a module. Run
+  # /afterlife setup status to see which types the running server still needs.
   types:
     - GENERIC
     - ELECTRICAL_CABINET
@@ -58,10 +61,14 @@ poi:
     - DELIVERY_DESTINATION
     - SHADOW_DROP
     - HOSPITAL_WORKSTATION
+    - EMERGENCY_POINT
+    - TOXIC_BARREL
     - WORKSHOP_LIFT
     - IMPOUND_BAY
     - DEALERSHIP_GARAGE
     - NIGHTCLUB_SAFE
     - POS_TERMINAL
+    - SHAKER_STATION
     - DJ_BOOTH
     - VIP_DOOR
+    - STREET_SALE_ZONE

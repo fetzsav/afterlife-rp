@@ -1,6 +1,10 @@
 package com.afterlife.rp.config;
 
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.Locale;
@@ -54,7 +58,7 @@ public final class Messages {
                 plugin.saveResource(resource, false);
             }
             if (file.exists()) {
-                byLanguage.put(lang, YamlConfiguration.loadConfiguration(file));
+                byLanguage.put(lang, loadWithNewKeys(plugin, file, resource));
             } else {
                 plugin.getLogger().warning("Missing translation file " + resource
                         + " — language '" + lang + "' will be unavailable.");
@@ -65,6 +69,37 @@ public final class Messages {
                     "Default language file messages_" + defaultLanguage + ".yml is missing");
         }
         return new Messages(byLanguage, defaultLanguage);
+    }
+
+    /**
+     * Loads a translation file and adds any message the bundled version has and
+     * the file does not. An upgrade that ships new keys must not leave holes in
+     * an already-customized file, and edited texts are never overwritten.
+     */
+    private static YamlConfiguration loadWithNewKeys(JavaPlugin plugin, File file, String resource) {
+        YamlConfiguration loaded = YamlConfiguration.loadConfiguration(file);
+        try (InputStream bundledStream = plugin.getResource(resource)) {
+            if (bundledStream == null) {
+                return loaded;
+            }
+            YamlConfiguration bundled = YamlConfiguration.loadConfiguration(
+                    new InputStreamReader(bundledStream, StandardCharsets.UTF_8));
+            int added = 0;
+            for (String key : bundled.getKeys(true)) {
+                if (!bundled.isConfigurationSection(key) && !loaded.contains(key)) {
+                    loaded.set(key, bundled.get(key));
+                    added++;
+                }
+            }
+            if (added > 0) {
+                loaded.save(file);
+                plugin.getLogger().info("Added " + added + " new message(s) to " + resource);
+            }
+        } catch (IOException e) {
+            plugin.getLogger().warning("Could not merge new messages into " + resource
+                    + ": " + e.getMessage());
+        }
+        return loaded;
     }
 
     /** Wires per-player language lookup once identity is available. */
@@ -106,6 +141,11 @@ public final class Messages {
     /** Renders in the default language, without the prefix (kick screens, lore). */
     public Component bare(String key, TagResolver... resolvers) {
         return MINI.deserialize(raw(defaultLanguage, key), resolvers);
+    }
+
+    /** Renders in the recipient's language, without the prefix (inline fragments). */
+    public Component bareFor(CommandSender to, String key, TagResolver... resolvers) {
+        return MINI.deserialize(raw(languageFor(to), key), resolvers);
     }
 
     private String prefix(String language) {

@@ -47,6 +47,87 @@ poi:
   report-saved: "<green>Report setup salvato in <white><file></white>.</green>"
   usage: "<gray>Uso: <yellow>/afterlife setup poi <create|remove|list|report></yellow></gray>"
 
+setup:
+  menu-header: "<gray>Configurazione AfterLife — clicca un comando per inserirlo in chat:</gray>"
+  menu-entry: "<dark_gray> - </dark_gray><white><label></white>\n<dark_gray>   </dark_gray><yellow><command></yellow>"
+  menu-footer: "<gray>Inizia da <yellow>/afterlife setup status</yellow>: elenca cosa manca e il comando che risolve ogni punto.</gray>"
+  menu:
+    status: "Elenco di verifica per ogni modulo"
+    poi: "Registra un punto di interesse dove ti trovi (ATM, ristorante, POS, ...)"
+    poi-list: "Elenca i punti di interesse registrati"
+    property: "Registra un immobile in vendita dove ti trovi"
+    org: "Crea un'organizzazione con tesoreria e IBAN"
+    license: "Concedi o revoca una licenza professionale"
+    export: "Esporta POI, immobili e organizzazioni in un file blueprint"
+    import: "Anteprima o applicazione di un blueprint su questo server"
+  click-hint: "<gray>Clicca per inserire il comando in chat</gray>"
+  status-header: "<gray>Stato configurazione — <white><ready>/<total></white> moduli attivi giocabili</gray>"
+  module-ready: "<green>+ <module></green>"
+  module-incomplete: "<yellow>> <module></yellow>"
+  module-disabled: "<dark_gray>o <module> — disattivato in <detail></dark_gray>"
+  module-error: "<red>x <module> — errore di configurazione: <detail></red>"
+  module-blocked: "<dark_gray>o <module> — inattivo, richiede: <detail></dark_gray>"
+  check-ok: "<dark_gray>   </dark_gray><green>+</green> <gray><label></gray> <dark_gray><detail></dark_gray>"
+  check-missing: "<dark_gray>   </dark_gray><red>x</red> <white><label></white> <dark_gray><detail></dark_gray>\n<dark_gray>     </dark_gray><yellow><command></yellow>"
+  check-optional: "<dark_gray>   </dark_gray><yellow>-</yellow> <gray><label> (facoltativo)</gray> <dark_gray><detail></dark_gray> <yellow><command></yellow>"
+  check-unknown: "<dark_gray>   </dark_gray><gray>?</gray> <gray><label></gray> <dark_gray><detail> — non verificabile</dark_gray>"
+  all-ready: "<green>Ogni modulo attivo ha quello che serve. Esporta il risultato con <white>/afterlife setup export city</white> per poterlo ricostruire.</green>"
+  next-step: "<gray>Prossimo passo (<count> rimasti): <white><label></white></gray>\n<dark_gray>  </dark_gray><yellow><command></yellow>"
+  module:
+    banking: "Banca"
+    legal: "Giustizia"
+    realestate: "Immobiliare"
+    electrician: "Elettricista"
+    delivery: "Consegne"
+    ems: "Sanità / ospedale"
+    nightclub: "Discoteca"
+    police: "Polizia"
+    crime: "Criminalità"
+  requirement:
+    banking:
+      atm: "ATM / sportelli bancari"
+      staff: "Permessi del personale bancario"
+      vault: "Ponte VaultUnlocked per altri plugin"
+    legal:
+      lawyer: "Permessi degli avvocati"
+    realestate:
+      property: "Immobili sul mercato"
+      staff: "Permessi dell'agenzia"
+    electrician:
+      poi: "Impianti riparabili"
+      worker: "Permessi degli elettricisti"
+    delivery:
+      restaurant: "Ristoranti da cui ritirare"
+      destination: "Indirizzi di consegna"
+      shadow: "Punti di consegna occulti per il contrabbando"
+      driver: "Permessi dei rider"
+    ems:
+      workstation: "Postazioni ospedaliere"
+      emergency: "Punti di emergenza"
+      toxic: "Barili tossici"
+      medic: "Permessi dei medici"
+    nightclub:
+      pos: "Terminali POS al bancone"
+      shaker: "Postazioni shaker"
+      dj: "Consolle DJ"
+      club-region: "Regione WorldGuard del locale"
+      vip-region: "Regione WorldGuard dell'area VIP"
+      staff: "Permessi dello staff del locale"
+    police:
+      officer: "Permessi della polizia"
+    crime:
+      sale-zone: "Zone di spaccio"
+      atm: "ATM violabili"
+      gang: "Permessi delle gang"
+  export-ok: "<green>Blueprint salvato: <white><file></white> — <pois> POI, <properties> immobili, <organizations> organizzazioni.</green>"
+  export-failed: "<red>Esportazione fallita: <detail></red>"
+  import-usage: "<gray>Uso: <yellow>/afterlife setup import <nome> [apply]</yellow>. Senza <white>apply</white> mostra solo l'anteprima.</gray>"
+  import-preview: "<gray>Anteprima: <white><created></white> da creare, <white><skipped></white> già presenti, <white><failed></white> non utilizzabili.</gray>"
+  import-applied: "<green>Blueprint applicato: <created> creati, <skipped> saltati, <failed> falliti.</green>"
+  import-confirm: "<gray>Applicalo con:</gray> <yellow><command></yellow>"
+  import-entry-failed: "<red>Impossibile importare <kind> <white><name></white>: <detail></red>"
+  import-failed: "<red>Importazione fallita: <detail></red>"
+
 debug:
   item-issued: "<green>Oggetto serializzato emesso: <white><type></white> <dark_gray>serial <serial></dark_gray></green>"
   item-usage: "<gray>Uso: <yellow>/afterlife debug item <tipo> [taglio]</yellow></gray>"

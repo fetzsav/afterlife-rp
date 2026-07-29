@@ -33,8 +33,8 @@ public final class CraftEngineAdapter implements CustomItemAdapter, Adapter {
     @Override
     public String detail() {
         return available
-                ? "modelli personalizzati per gli oggetti"
-                : "installa CraftEngine per i modelli personalizzati (fallback vanilla attivo)";
+                ? "custom item models"
+                : "install CraftEngine for custom item models (vanilla fallback active)";
     }
 
     @Override

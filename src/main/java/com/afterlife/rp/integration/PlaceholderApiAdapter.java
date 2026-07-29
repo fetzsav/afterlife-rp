@@ -33,9 +33,9 @@ public final class PlaceholderApiAdapter implements Adapter {
     @Override
     public String detail() {
         if (!available) {
-            return "installa PlaceholderAPI per i segnaposto";
+            return "install PlaceholderAPI for placeholders";
         }
-        return registered ? "%afterlife_public_id%, %afterlife_nickname%" : "registrazione fallita";
+        return registered ? "%afterlife_public_id%, %afterlife_nickname%" : "registration failed";
     }
 
     private static final class Hook {

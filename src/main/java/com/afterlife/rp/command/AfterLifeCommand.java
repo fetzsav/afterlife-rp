@@ -16,16 +16,25 @@ import com.afterlife.rp.shared.economy.ReconciliationService;
 import com.afterlife.rp.shared.items.SerializedItemService;
 import com.afterlife.rp.shared.regions.Poi;
 import com.afterlife.rp.shared.regions.PoiService;
+import com.afterlife.rp.setup.SetupBlueprintService;
+import com.afterlife.rp.setup.SetupRegistry;
+import com.afterlife.rp.setup.SetupRequirement;
+import com.afterlife.rp.setup.SetupStatusService;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
+import java.util.UUID;
 import java.util.stream.Collectors;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.event.ClickEvent;
+import net.kyori.adventure.text.event.HoverEvent;
 import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
@@ -56,6 +65,9 @@ public final class AfterLifeCommand implements CommandExecutor, TabCompleter {
     private final LegalService legalService;
     private final RealEstateService realEstateService;
     private final EconomyReportService economyReportService;
+    private final SetupRegistry setupRegistry;
+    private final SetupStatusService setupStatusService;
+    private final SetupBlueprintService setupBlueprintService;
 
     public AfterLifeCommand(
             JavaPlugin plugin,
@@ -70,7 +82,10 @@ public final class AfterLifeCommand implements CommandExecutor, TabCompleter {
             BankingService bankingService,
             LegalService legalService,
             RealEstateService realEstateService,
-            EconomyReportService economyReportService) {
+            EconomyReportService economyReportService,
+            SetupRegistry setupRegistry,
+            SetupStatusService setupStatusService,
+            SetupBlueprintService setupBlueprintService) {
         this.plugin = plugin;
         this.databaseManager = databaseManager;
         this.integrationManager = integrationManager;
@@ -84,6 +99,9 @@ public final class AfterLifeCommand implements CommandExecutor, TabCompleter {
         this.legalService = legalService;
         this.realEstateService = realEstateService;
         this.economyReportService = economyReportService;
+        this.setupRegistry = setupRegistry;
+        this.setupStatusService = setupStatusService;
+        this.setupBlueprintService = setupBlueprintService;
     }
 
     @Override
@@ -193,34 +211,206 @@ public final class AfterLifeCommand implements CommandExecutor, TabCompleter {
             messages.send(sender, "general.no-permission");
             return;
         }
+        String section = args.length >= 2 ? args[1].toLowerCase(Locale.ROOT) : "";
+        // The checklist is a diagnostic: it stays available while the database is
+        // down, and simply reports the parts it cannot verify as unknown.
+        if (section.equals("status")) {
+            setupStatus(sender);
+            return;
+        }
+        if (section.isEmpty() || section.equals("help")) {
+            setupMenu(sender);
+            return;
+        }
         if (!databaseManager.ready()) {
             messages.send(sender, "general.db-unavailable");
             return;
         }
-        if (args.length >= 2 && args[1].equalsIgnoreCase("org")) {
-            orgSetup(sender, args);
+        switch (section) {
+            case "org" -> orgSetup(sender, args);
+            case "license" -> licenseSetup(sender, args);
+            case "property" -> propertySetup(sender, args);
+            case "export" -> setupExport(sender, args);
+            case "import" -> setupImport(sender, args);
+            case "poi" -> {
+                String action = args.length >= 3 ? args[2].toLowerCase(Locale.ROOT) : "";
+                switch (action) {
+                    case "create" -> poiCreate(sender, args);
+                    case "remove" -> poiRemove(sender, args);
+                    case "list" -> poiList(sender);
+                    case "report" -> poiReport(sender);
+                    default -> messages.send(sender, "poi.usage");
+                }
+            }
+            default -> setupMenu(sender);
+        }
+    }
+
+    /** What setup can do, each line click-to-fill so nothing has to be typed. */
+    private void setupMenu(CommandSender sender) {
+        messages.send(sender, "setup.menu-header");
+        menuEntry(sender, "status", "/afterlife setup status");
+        menuEntry(sender, "poi", "/afterlife setup poi create ");
+        menuEntry(sender, "poi-list", "/afterlife setup poi list");
+        menuEntry(sender, "property", "/afterlife setup property create HOUSE ");
+        menuEntry(sender, "org", "/afterlife setup org create ");
+        menuEntry(sender, "license", "/afterlife setup license grant ");
+        menuEntry(sender, "export", "/afterlife setup export city");
+        menuEntry(sender, "import", "/afterlife setup import city");
+        messages.send(sender, "setup.menu-footer");
+    }
+
+    private void menuEntry(CommandSender sender, String id, String command) {
+        messages.send(sender, "setup.menu-entry",
+                Placeholder.component("label", messages.bareFor(sender, "setup.menu." + id)),
+                Placeholder.component("command", clickable(sender, command)));
+    }
+
+    /** Live readiness checklist: every gap carries the command that closes it. */
+    private void setupStatus(CommandSender sender) {
+        String world = sender instanceof Player player
+                ? player.getWorld().getName()
+                : (Bukkit.getWorlds().isEmpty() ? "world" : Bukkit.getWorlds().get(0).getName());
+        setupStatusService.evaluate(world).whenComplete((report, error) -> onMain(() -> {
+            if (error != null) {
+                messages.send(sender, "general.internal-error");
+                plugin.getLogger().warning("Setup status failed: " + error.getMessage());
+                return;
+            }
+            messages.send(sender, "setup.status-header",
+                    Placeholder.unparsed("ready", String.valueOf(report.readyModules())),
+                    Placeholder.unparsed("total", String.valueOf(report.activeModules())));
+            for (SetupStatusService.ModuleReport module : report.modules()) {
+                sendModuleLine(sender, module);
+                for (SetupStatusService.Check check : module.checks()) {
+                    sendCheckLine(sender, check);
+                }
+            }
+            List<SetupStatusService.Check> blocking = report.blocking();
+            if (blocking.isEmpty()) {
+                messages.send(sender, "setup.all-ready");
+                return;
+            }
+            SetupStatusService.Check next = blocking.get(0);
+            messages.send(sender, "setup.next-step",
+                    Placeholder.unparsed("count", String.valueOf(blocking.size())),
+                    Placeholder.component("label", requirementLabel(sender, next.requirement())),
+                    Placeholder.component("command", clickable(sender, next.fix())));
+        }));
+    }
+
+    private void sendModuleLine(CommandSender sender, SetupStatusService.ModuleReport module) {
+        Component name = messages.bareFor(sender, "setup.module." + module.module().key());
+        String key = switch (module.module().state()) {
+            case ACTIVE -> module.ready() ? "setup.module-ready" : "setup.module-incomplete";
+            case DISABLED -> "setup.module-disabled";
+            case CONFIG_ERROR -> "setup.module-error";
+            case BLOCKED -> "setup.module-blocked";
+        };
+        messages.send(sender, key,
+                Placeholder.component("module", name),
+                Placeholder.unparsed("detail", module.module().detail()));
+    }
+
+    private void sendCheckLine(CommandSender sender, SetupStatusService.Check check) {
+        String key = switch (check.status()) {
+            case OK -> "setup.check-ok";
+            case UNKNOWN -> "setup.check-unknown";
+            case MISSING -> check.requirement().optional()
+                    ? "setup.check-optional" : "setup.check-missing";
+        };
+        messages.send(sender, key,
+                Placeholder.component("label", requirementLabel(sender, check.requirement())),
+                Placeholder.unparsed("detail", check.detail()),
+                Placeholder.component("command", clickable(sender, check.fix())));
+    }
+
+    private Component requirementLabel(CommandSender sender, SetupRequirement requirement) {
+        return messages.bareFor(sender, "setup.requirement." + requirement.id());
+    }
+
+    /** Click-to-fill chat suggestion; empty when there is nothing to run. */
+    private Component clickable(CommandSender sender, String command) {
+        if (command == null || command.isBlank()) {
+            return Component.empty();
+        }
+        return Component.text(command)
+                .clickEvent(ClickEvent.suggestCommand(command))
+                .hoverEvent(HoverEvent.showText(messages.bareFor(sender, "setup.click-hint")));
+    }
+
+    private void setupExport(CommandSender sender, String[] args) {
+        String name = args.length >= 3 ? args[2] : "city";
+        Path file = setupBlueprintService.fileFor(name);
+        setupBlueprintService.export(file).whenComplete((result, error) -> onMain(() -> {
+            if (error != null) {
+                messages.send(sender, "setup.export-failed",
+                        Placeholder.unparsed("detail", String.valueOf(error.getMessage())));
+                plugin.getLogger().warning("Setup export failed: " + error);
+                return;
+            }
+            messages.send(sender, "setup.export-ok",
+                    Placeholder.unparsed("file", result.file().toString()),
+                    Placeholder.unparsed("pois", String.valueOf(result.pois())),
+                    Placeholder.unparsed("properties", String.valueOf(result.properties())),
+                    Placeholder.unparsed("organizations", String.valueOf(result.organizations())));
+        }));
+    }
+
+    private void setupImport(CommandSender sender, String[] args) {
+        if (args.length < 3) {
+            messages.send(sender, "setup.import-usage");
             return;
         }
-        if (args.length >= 2 && args[1].equalsIgnoreCase("license")) {
-            licenseSetup(sender, args);
-            return;
+        String name = args[2];
+        // Dry run by default: the admin sees the effect before anything is written.
+        boolean apply = args.length >= 4 && args[3].equalsIgnoreCase("apply");
+        UUID actor = sender instanceof Player player ? player.getUniqueId() : null;
+        setupBlueprintService.importFrom(setupBlueprintService.fileFor(name), apply, actor,
+                        sender.getName())
+                .whenComplete((result, error) -> onMain(() -> {
+                    if (error != null) {
+                        messages.send(sender, "setup.import-failed",
+                                Placeholder.unparsed("detail", String.valueOf(error.getMessage())));
+                        plugin.getLogger().warning("Setup import failed: " + error);
+                        return;
+                    }
+                    messages.send(sender, apply ? "setup.import-applied" : "setup.import-preview",
+                            Placeholder.unparsed("created", String.valueOf(result.created().size())),
+                            Placeholder.unparsed("skipped", String.valueOf(result.skipped().size())),
+                            Placeholder.unparsed("failed", String.valueOf(result.failed().size())));
+                    for (SetupBlueprintService.Entry entry : result.failed()) {
+                        messages.send(sender, "setup.import-entry-failed",
+                                Placeholder.unparsed("kind", entry.kind()),
+                                Placeholder.unparsed("name", entry.name()),
+                                Placeholder.unparsed("detail", entry.note()));
+                    }
+                    if (!apply && !result.created().isEmpty()) {
+                        messages.send(sender, "setup.import-confirm", Placeholder.component(
+                                "command",
+                                clickable(sender, "/afterlife setup import " + name + " apply")));
+                    }
+                }));
+    }
+
+    /** Async results land back on the server thread before touching Bukkit. */
+    private void onMain(Runnable task) {
+        if (Bukkit.isPrimaryThread()) {
+            task.run();
+        } else {
+            Bukkit.getScheduler().runTask(plugin, task);
         }
-        if (args.length >= 2 && args[1].equalsIgnoreCase("property")) {
-            propertySetup(sender, args);
-            return;
-        }
-        if (args.length < 2 || !args[1].equalsIgnoreCase("poi")) {
-            messages.send(sender, "poi.usage");
-            return;
-        }
-        String action = args.length >= 3 ? args[2].toLowerCase(Locale.ROOT) : "";
-        switch (action) {
-            case "create" -> poiCreate(sender, args);
-            case "remove" -> poiRemove(sender, args);
-            case "list" -> poiList(sender);
-            case "report" -> poiReport(sender);
-            default -> messages.send(sender, "poi.usage");
-        }
+    }
+
+    /**
+     * POI types an admin may register: the configured allow-list plus everything
+     * an active module asks for, so a module can never need a type the command
+     * rejects.
+     */
+    private Set<String> allowedPoiTypes() {
+        Set<String> types = new LinkedHashSet<>(coreConfig.poiTypes());
+        types.addAll(setupRegistry.requiredPoiTypes());
+        return types;
     }
 
     private void licenseSetup(CommandSender sender, String[] args) {
@@ -343,9 +533,9 @@ public final class AfterLifeCommand implements CommandExecutor, TabCompleter {
         String name = args[4];
         String regionId = args.length >= 6 ? args[5] : null;
 
-        if (!coreConfig.poiTypes().contains(type)) {
+        if (!allowedPoiTypes().contains(type)) {
             messages.send(sender, "poi.invalid-type",
-                    Placeholder.unparsed("types", String.join(", ", coreConfig.poiTypes())));
+                    Placeholder.unparsed("types", String.join(", ", allowedPoiTypes())));
             return;
         }
         if (poiService.byName(name).isPresent()) {
@@ -413,7 +603,7 @@ public final class AfterLifeCommand implements CommandExecutor, TabCompleter {
         lines.add("AfterLifeRP setup report — " + Instant.now());
         lines.add("");
         var byType = poiService.all().stream().collect(Collectors.groupingBy(Poi::type));
-        for (String type : coreConfig.poiTypes()) {
+        for (String type : allowedPoiTypes()) {
             List<Poi> pois = byType.getOrDefault(type, List.of());
             lines.add("[" + type + "] " + pois.size() + " POI");
             for (Poi poi : pois) {
@@ -517,20 +707,52 @@ public final class AfterLifeCommand implements CommandExecutor, TabCompleter {
             return filter(List.of("version", "health", "setup", "debug", "reconcile", "economy"),
                     args[0]);
         }
-        if (args.length == 2 && args[0].equalsIgnoreCase("setup")) {
-            return filter(List.of("poi", "org", "license", "property"), args[1]);
-        }
-        if (args.length == 3 && args[0].equalsIgnoreCase("setup")) {
-            return filter(List.of("create", "remove", "list", "report"), args[2]);
-        }
-        if (args.length == 4 && args[0].equalsIgnoreCase("setup") && args[2].equalsIgnoreCase("create")) {
-            return filter(List.copyOf(coreConfig.poiTypes()), args[3]);
-        }
-        if (args.length == 4 && args[0].equalsIgnoreCase("setup") && args[2].equalsIgnoreCase("remove")) {
-            return filter(poiService.all().stream().map(Poi::name).toList(), args[3]);
+        if (args[0].equalsIgnoreCase("setup")) {
+            return setupCompletions(args);
         }
         if (args.length == 2 && args[0].equalsIgnoreCase("debug")) {
             return filter(List.of("item", "dirtymoney"), args[1]);
+        }
+        return List.of();
+    }
+
+    private List<String> setupCompletions(String[] args) {
+        if (args.length == 2) {
+            return filter(List.of("status", "poi", "property", "org", "license",
+                    "export", "import", "help"), args[1]);
+        }
+        String section = args[1].toLowerCase(Locale.ROOT);
+        if (args.length == 3) {
+            return switch (section) {
+                case "poi" -> filter(List.of("create", "remove", "list", "report"), args[2]);
+                case "property", "org" -> filter(List.of("create"), args[2]);
+                case "license" -> filter(List.of("grant", "revoke"), args[2]);
+                case "import" -> filter(setupBlueprintService.available(), args[2]);
+                default -> List.of();
+            };
+        }
+        if (args.length == 4) {
+            if (section.equals("poi") && args[2].equalsIgnoreCase("create")) {
+                return filter(List.copyOf(allowedPoiTypes()), args[3]);
+            }
+            if (section.equals("poi") && args[2].equalsIgnoreCase("remove")) {
+                return filter(poiService.all().stream().map(Poi::name).toList(), args[3]);
+            }
+            if (section.equals("property") && args[2].equalsIgnoreCase("create")) {
+                return filter(List.of("HOUSE", "APARTMENT"), args[3]);
+            }
+            if (section.equals("license")) {
+                return TabComplete.players(args[3]);
+            }
+            if (section.equals("import")) {
+                return filter(List.of("apply"), args[3]);
+            }
+        }
+        // License types are free-form RP labels (master plan §6.3); these are the
+        // conventional ones, and any other string is accepted.
+        if (args.length == 5 && section.equals("license")) {
+            return filter(List.of("MEDICAL", "FIREARM", "DRIVER", "LAW_DEGREE", "BUSINESS"),
+                    args[4]);
         }
         return List.of();
     }

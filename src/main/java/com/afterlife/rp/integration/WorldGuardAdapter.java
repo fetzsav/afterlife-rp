@@ -32,7 +32,7 @@ public final class WorldGuardAdapter implements Adapter {
 
     @Override
     public String detail() {
-        return available ? "regioni collegabili ai POI" : "installa WorldGuard per le regioni";
+        return available ? "regions bindable to POIs" : "install WorldGuard for regions";
     }
 
     public boolean regionExists(World world, String regionId) {

@@ -188,7 +188,11 @@ listing it under `language.available`.
 
 ### Admin (`afterlife.admin` / `afterlife.admin.setup`)
 - `/afterlife <version|health|reconcile|economy>`.
+- `/afterlife setup` — menu; `/afterlife setup status` — live readiness
+  checklist per module, each gap carrying the command that closes it.
 - `/afterlife setup <poi|org|license|property> …`.
+- `/afterlife setup export <name>` / `import <name> [apply]` — snapshot and
+  replay POIs, properties, and organizations (see `docs/setup-guide.md`).
 - `/afterlife debug <item <type> [denom]|dirtymoney <euro>>`.
 
 ---
