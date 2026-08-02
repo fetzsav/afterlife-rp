@@ -71,9 +71,10 @@ under `shared/`.
 ## 2. Dependencies & environment
 
 Installed plugins (all MC 26.2 compatible): LuckPerms, WorldEdit + WorldGuard,
-PlaceholderAPI, VaultUnlocked, Citizens, ProtocolLib, CraftEngine. Every one is
-a **soft dependency** surfaced by `/afterlife health`; the plugin boots and
-degrades gracefully when any is absent.
+PlaceholderAPI, VaultUnlocked, Citizens, CraftEngine. Every one is a **soft
+dependency** surfaced by `/afterlife health`; the plugin boots and degrades
+gracefully when any is absent. The plugin has no packet library dependency
+(neither ProtocolLib nor PacketEvents) — it sends no packets.
 
 Runtime libraries (HikariCP, Flyway, MariaDB driver) load via `plugin.yml`
 `libraries:` on first boot. The database runs in Docker beside the game

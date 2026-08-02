@@ -43,9 +43,6 @@ public final class IntegrationManager {
         add(logger, () -> new PresenceAdapter("Citizens",
                 "NPCs available to job modules",
                 "install Citizens for NPC-driven jobs"));
-        add(logger, () -> new PresenceAdapter("ProtocolLib",
-                "available for packet-only visuals",
-                "optional: packet-only visuals and virtual signs"));
         customItems = add(logger, CraftEngineAdapter::new);
         for (Adapter adapter : adapters) {
             logger.info("Integration " + adapter.name() + ": "

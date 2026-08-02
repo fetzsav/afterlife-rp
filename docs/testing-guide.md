@@ -20,7 +20,7 @@ Assumes the plugin is deployed and the database is running (it is — see
   `/lp user <name> permission set afterlife.bank.banker true`.
 - **Verify the plugin is healthy:** `/afterlife health` — database connected,
   all adapters active (LuckPerms, WorldGuard, PlaceholderAPI, Vault, Citizens,
-  ProtocolLib, CraftEngine).
+  CraftEngine).
 
 ### Speeding up timed features (optional but recommended)
 
