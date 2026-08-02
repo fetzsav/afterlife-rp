@@ -41,12 +41,15 @@ public final class NametagService {
 
     public void remove(Player player, PlayerIdentity identity) {
         Scoreboard scoreboard = Bukkit.getScoreboardManager().getMainScoreboard();
-        Team team = scoreboard.getTeam(teamName(identity));
+        String teamName = teamName(identity);
+        Team team = scoreboard.getTeam(teamName);
         if (team != null) {
             team.removeEntry(player.getName());
             if (team.getEntries().isEmpty()) {
+                // Read nothing off the team after unregister: CraftTeam throws
+                // IllegalStateException from every accessor, getName() included.
                 team.unregister();
-                managedTeams.remove(team.getName());
+                managedTeams.remove(teamName);
             }
         }
     }
