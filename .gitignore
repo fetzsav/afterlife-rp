@@ -8,3 +8,15 @@ build/
 secret.key
 run/
 backups/
+
+# Gradle/IDE leftovers (from the GitHub Gradle template)
+gradle-app.setting
+.gradletasknamecache
+!gradle-wrapper.jar
+!gradle-wrapper.properties
+.project
+.classpath
+.settings/
+
+# Local source export
+afterlife-source/
